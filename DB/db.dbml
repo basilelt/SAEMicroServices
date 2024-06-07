@@ -1,36 +1,67 @@
-// Documentation DBML format
-
-
-// Table: users
-table users {
-    id int [pk, increment]
-    name varchar
-    email varchar [unique]
-    created_at datetime [default: `now()`]
+table app_user {
+  id int [pk, increment]
+  email varchar(255) [unique, not null]
+  password varchar(255) [not null]
+  username varchar(150) [unique, not null]
+  first_name varchar(30) [not null]
+  last_name varchar(30) [not null]
 }
 
-// Table: posts
-table posts {
-    id int [pk, increment]
-    title varchar
-    content text
-    user_id int [ref: > users.id]
-    created_at datetime [default: `now()`]
+table staff {
+  id int [ref: > app_user.id, pk]
+  staff_type_id int [ref: > staff_type.id]
 }
 
-// Table: comments
-table comments {
-    id int [pk, increment]
-    content text
-    user_id int [ref: > users.id]
-    post_id int [ref: > posts.id]
-    created_at datetime [default: `now()`]
+table staff_type {
+  id int [pk, increment]
+  type varchar(100) [not null]
 }
 
-// Table: likes
-table likes {
-    id int [pk, increment]
-    user_id int [ref: > users.id]
-    post_id int [ref: > posts.id]
-    created_at datetime [default: `now()`]
+table flight {
+  id int [pk, increment]
+  flight_number varchar(10) [not null, unique]
+  departure timestamptz [not null]
+  arrival timestamptz [not null]
+  plane_id int [ref: > plane.id]
+  track_id_origin int [ref: > track.id]
+  track_id_destination int [ref: > track.id]
+}
+
+table plane {
+  id int [pk, increment]
+  model varchar(100) [not null]
+  second_class_capacity int [not null]
+  first_class_capacity int [not null]
+}
+
+table booking {
+  id int [pk, increment]
+  booking_date timestamptz [default: `current_timestamptz`]
+  price float [not null]
+  booking_type_id varchar [ref: > booking_type.id]
+  app_user_id int [ref: > app_user.id]
+  flight_id int [ref: > flight.id]
+}
+
+table booking_type {
+  id int [pk, increment]
+  type varchar(30) [not null]
+}
+
+table working {
+  staff_id int [ref: > staff.id]
+  flight_id int [ref: > flight.id]
+}
+
+table airport {
+  id int [pk, increment]
+  name varchar(100) [not null]
+  location varchar(100) [not null]
+}
+
+table track {
+  id int [pk, increment]
+  track_number varchar(10) [not null]
+  length int [not null]
+  airport_id int [ref: > airport.id]
 }
