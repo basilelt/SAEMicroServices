@@ -76,7 +76,7 @@ table booking {
   booking_date timestamptz [default: `CURRENT_TIMESTAMP`]
   price float [not null]
   booking_type_id varchar [ref: > booking_type.id]
-  app_user_id int [ref: > client.id]
+  client_id int [ref: > client.id]
   flight_id int [ref: > flight.id]
 }
 
