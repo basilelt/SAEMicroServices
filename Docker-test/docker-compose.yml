@@ -43,7 +43,7 @@ services:
       - back_db_api
       - back_nats_api
     ports:
-      - "8000:8000"
+      - "8020:8000"
     hostname: django_api
     depends_on:
       - "db"
