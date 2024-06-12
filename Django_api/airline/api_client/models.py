@@ -1,5 +1,4 @@
 # api_client/models.py
-
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager, Group, Permission
 
