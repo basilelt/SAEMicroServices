@@ -11,6 +11,13 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+import os
+
+# Determine the running environment
+ENVIRONMENT = os.getenv('DJANGO_ENVIRONMENT', 'development')
+
+if ENVIRONMENT != 'development':
+    import daphne
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,9 +30,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-99(zxsdor&rf!8))*ibklrk5+mf2a8#9e77a5sjpt6$_1_w)u@'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+if ENVIRONMENT == 'development':
+    DEBUG = True
+else:
+    DEBUG = False
+    
+if ENVIRONMENT == 'development':
+    ALLOWED_HOSTS = []
+else:
+    ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS').split(',')
 
-ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -52,6 +66,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+if ENVIRONMENT != 'development':
+    CSRF_TRUSTED_ORIGINS = os.getenv('DJANGO_ORIGIN').split(',')
+
 ROOT_URLCONF = 'airline.urls'
 
 TEMPLATES = [
@@ -70,24 +87,35 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'airline.wsgi.application'
+if ENVIRONMENT == 'development':
+    WSGI_APPLICATION = 'airline.wsgi.application'
+else:
+    ASGI_APPLICATION = 'airline.asgi.application'
 
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-# settings.py
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'SAEMicroServcies',  
-        'USER': 'postgres',
-        'PASSWORD': 'a',  
-        'HOST': 'localhost',
-        'PORT': '5432',
+if ENVIRONMENT == 'development':
+    # Use SQLite for development
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    # Use PostgreSQL for production
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DJANGO_DB_NAME'),
+            'USER': os.getenv('DJANGO_DB_USER'),
+            'PASSWORD': os.getenv('DJANGO_DB_PASSWORD'),
+            'HOST': os.getenv('DJANGO_DB_HOST'),
+            'PORT': os.getenv('DJANGO_DB_PORT'),
+        }
+    }
 
 
 
@@ -114,7 +142,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'fr-fr'
 
 TIME_ZONE = 'UTC'
 
