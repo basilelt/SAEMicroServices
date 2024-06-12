@@ -16,7 +16,7 @@ table staff {
   password varchar(255) [not null]
   is_staff bool
   is_superuser bool
-  staff_type_id int [ref: > staff_type.id]
+  staff_type int [ref: > staff_type.id]
 }
 
 Table staff_type {
@@ -30,13 +30,13 @@ table group {
 }
 
 table client_groups {
-  client_id int [ref: > client.id]
-  group_id int [ref: > group.id]
+  client int [ref: > client.id]
+  group int [ref: > group.id]
 }
 
 table staff_groups {
-  staff_id int [ref: > staff.id]
-  group_id int [ref: > group.id]
+  staff int [ref: > staff.id]
+  group int [ref: > group.id]
 }
 
 table permission {
@@ -45,13 +45,13 @@ table permission {
 }
 
 table client_permissions {
-  client_id int [ref: > client.id]
-  permission_id int [ref: > permission.id]
+  client int [ref: > client.id]
+  permission int [ref: > permission.id]
 }
 
 table staff_permissions {
-  staff_id int [ref: > staff.id]
-  permission_id int [ref: > permission.id]
+  staff int [ref: > staff.id]
+  permission int [ref: > permission.id]
 }
 
 table flight {
@@ -59,9 +59,9 @@ table flight {
   flight_number varchar(10) [not null, unique]
   departure timestamptz [not null]
   arrival timestamptz [not null]
-  plane_id int [ref: > plane.id]
-  track_id_origin int [ref: > track.id]
-  track_id_destination int [ref: > track.id]
+  plane int [ref: > plane.id]
+  track_origin int [ref: > track.id]
+  track_destination int [ref: > track.id]
 }
 
 table plane {
@@ -75,9 +75,9 @@ table booking {
   id int [pk, increment]
   booking_date timestamptz [default: `CURRENT_TIMESTAMP`]
   price float [not null]
-  booking_type_id varchar [ref: > booking_type.id]
-  client_id int [ref: > client.id]
-  flight_id int [ref: > flight.id]
+  booking_type int [ref: > booking_type.id]
+  client int [ref: > client.id]
+  flight int [ref: > flight.id]
 }
 
 table booking_type {
@@ -86,8 +86,8 @@ table booking_type {
 }
 
 table working {
-  staff_id int [ref: > staff.id]
-  flight_id int [ref: > flight.id]
+  staff int [ref: > staff.id]
+  flight int [ref: > flight.id]
 }
 
 table airport {
@@ -100,5 +100,5 @@ table track {
   id int [pk, increment]
   track_number varchar(10) [not null]
   length int [not null]
-  airport_id int [ref: > airport.id]
+  airport int [ref: > airport.id]
 }
