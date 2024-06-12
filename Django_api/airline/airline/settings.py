@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'api_client',
     'api_staff',
+    'api_common',
     'drf_yasg',
     'djecrety',
     'django.contrib.admin',
