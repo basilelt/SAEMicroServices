@@ -36,7 +36,7 @@ table plane {
 
 table booking {
   id int [pk, increment]
-  booking_date timestamptz [default: `current_timestamptz`]
+  booking_date timestamptz [default: `CURRENT_TIMESTAMP`]
   price float [not null]
   booking_type_id varchar [ref: > booking_type.id]
   app_user_id int [ref: > app_user.id]

@@ -13,10 +13,13 @@ services:
     hostname: db
 
   nats:
-    build: ./NATS
+    image: nats:2.10
+    volumes:
+       - ./NATS/config/:/etc/nats
     environment:
       NATS_USER: ${NATS_USER}
       NATS_PASSWORD: ${NATS_PASSWORD}
+    command: "-c /etc/nats/nats.conf"
     restart: unless-stopped
     networks:
       - back_nats_api
