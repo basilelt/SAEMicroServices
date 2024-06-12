@@ -76,7 +76,7 @@ CREATE TABLE "booking" (
   "booking_date" timestamptz DEFAULT (CURRENT_TIMESTAMP),
   "price" float NOT NULL,
   "booking_type_id" varchar,
-  "app_user_id" int,
+  "client_id" int,
   "flight_id" int
 );
 
@@ -129,7 +129,7 @@ ALTER TABLE "flight" ADD FOREIGN KEY ("track_id_destination") REFERENCES "track"
 
 ALTER TABLE "booking" ADD FOREIGN KEY ("booking_type_id") REFERENCES "booking_type" ("id");
 
-ALTER TABLE "booking" ADD FOREIGN KEY ("app_user_id") REFERENCES "client" ("id");
+ALTER TABLE "booking" ADD FOREIGN KEY ("client_id") REFERENCES "client" ("id");
 
 ALTER TABLE "booking" ADD FOREIGN KEY ("flight_id") REFERENCES "flight" ("id");
 
