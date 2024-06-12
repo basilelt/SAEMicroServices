@@ -1,3 +1,4 @@
+#api_client.views
 from django.shortcuts import render
 from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
@@ -5,8 +6,15 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import RegisterSerializer, LoginSerializer
-
+from rest_framework import generics
+from .models import Client
+from django.contrib.auth import get_user_model
+from .serializers import UserSerializer
 User = get_user_model()
+
+class UserListView(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
 
 class RegisterView(APIView):
     def post(self, request):
