@@ -1,15 +1,42 @@
 # api_staff/views.py
+from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, generics
-from .serializers import StaffLoginSerializer, FlightSerializer
-from .models import Flight
+from .serializers import StaffLoginSerializer, FlightSerializer, PlaneSerializer, AirportSerializer, TrackSerializer
+from .models import Flight, Plane, Airport, Track
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
 
-User = get_user_model()
+class AirportListView(generics.ListCreateAPIView):
+    queryset = Airport.objects.all()
+    serializer_class = AirportSerializer
+
+class AirportDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Airport.objects.all()
+    serializer_class = AirportSerializer
+
+class PlaneListView(generics.ListCreateAPIView):
+    queryset = Plane.objects.all()
+    serializer_class = PlaneSerializer
+
+class PlaneDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Plane.objects.all()
+    serializer_class = PlaneSerializer
 
 class FlightListView(generics.ListAPIView):
+    queryset = Flight.objects.all()
+    serializer_class = FlightSerializer
+
+class AddFlightView(generics.CreateAPIView):
+    queryset = Flight.objects.all()
+    serializer_class = FlightSerializer
+
+class UpdateFlightView(generics.UpdateAPIView):
+    queryset = Flight.objects.all()
+    serializer_class = FlightSerializer
+
+class DeleteFlightView(generics.DestroyAPIView):
     queryset = Flight.objects.all()
     serializer_class = FlightSerializer
 
@@ -24,32 +51,3 @@ class StaffLoginView(APIView):
                 'access': str(refresh.access_token),
             })
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class AddFlightView(APIView):
-    def post(self, request):
-        serializer = FlightSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "Flight added successfully"}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class DeleteFlightView(APIView):
-    def delete(self, request, flight_id):
-        try:
-            flight = Flight.objects.get(id=flight_id)
-            flight.delete()
-            return Response({"message": "Flight deleted successfully"}, status=status.HTTP_200_OK)
-        except Flight.DoesNotExist:
-            return Response({"message": "Flight not found"}, status=status.HTTP_404_NOT_FOUND)
-
-class UpdateFlightView(APIView):
-    def patch(self, request, flight_id):
-        try:
-            flight = Flight.objects.get(id=flight_id)
-            serializer = FlightSerializer(flight, data=request.data, partial=True)
-            if serializer.is_valid():
-                serializer.save()
-                return Response({"message": "Flight updated successfully"}, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except Flight.DoesNotExist:
-            return Response({"message": "Flight not found"}, status=status.HTTP_404_NOT_FOUND)
