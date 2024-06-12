@@ -1,23 +1,19 @@
 # Django_Frontend/monprojet/monapp/forms.py
 from django import forms
-from .models import AppUser, Staff, Booking, Flight
 
-class AppUserForm(forms.ModelForm):
-    class Meta:
-        model = AppUser
-        fields = '__all__'
+class ClientForm(forms.Form):
+    username = forms.CharField(max_length=150)
+    email = forms.EmailField()
+    password = forms.CharField(widget=forms.PasswordInput)
+    first_name = forms.CharField(max_length=30)
+    last_name = forms.CharField(max_length=30)
+    is_staff = forms.BooleanField(required=False)
+    is_superuser = forms.BooleanField(required=False)
 
-class StaffForm(forms.ModelForm):
-    class Meta:
-        model = Staff
-        fields = '__all__'
-
-class BookingForm(forms.ModelForm):
-    class Meta:
-        model = Booking
-        fields = '__all__'
-
-class FlightForm(forms.ModelForm):
-    class Meta:
-        model = Flight
-        fields = '__all__'
+class StaffForm(forms.Form):
+    username = forms.CharField(max_length=150)
+    email = forms.EmailField()
+    password = forms.CharField(widget=forms.PasswordInput)
+    is_staff = forms.BooleanField(required=False)
+    is_superuser = forms.BooleanField(required=False)
+    staff_type = forms.IntegerField()
