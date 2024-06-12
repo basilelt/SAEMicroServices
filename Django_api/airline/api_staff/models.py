@@ -1,7 +1,5 @@
-#api_staff.models
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
-from django.contrib.auth.models import AbstractUser, Group, Permission
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin, AbstractUser, Group, Permission
 
 class StaffManager(BaseUserManager):
     def create_user(self, username, email, password=None, **extra_fields):
@@ -19,19 +17,12 @@ class StaffManager(BaseUserManager):
         return self.create_user(username, email, password, **extra_fields)
 
 class Staff(AbstractUser):
-    groups = models.ManyToManyField(
-        Group,
-        related_name='staff_set',
-        blank=True
-    )
-    user_permissions = models.ManyToManyField(
-        Permission,
-        related_name='staff_permission_set',
-        blank=True
-    )
-
     staff_type = models.ForeignKey('StaffType', on_delete=models.CASCADE)
 
+    class Meta:
+        verbose_name = 'staff'
+        verbose_name_plural = 'staff'
+    
     def __str__(self):
         return self.username
 
@@ -41,14 +32,59 @@ class StaffType(models.Model):
     def __str__(self):
         return self.type
 
-
 class Flight(models.Model):
-    flight_number = models.CharField(max_length=100)
-    departure = models.CharField(max_length=100)
-    arrival = models.CharField(max_length=100)
-    departure_time = models.DateTimeField()
-    arrival_time = models.DateTimeField()
+    flight_number = models.CharField(max_length=10, unique=True)
+    departure = models.DateTimeField()
+    arrival = models.DateTimeField()
+    plane = models.ForeignKey('Plane', on_delete=models.CASCADE)
+    track_origin = models.ForeignKey('Track', related_name='track_origins', on_delete=models.CASCADE)
+    track_destination = models.ForeignKey('Track', related_name='track_destinations', on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = 'flight'
         verbose_name_plural = 'flights'
+
+    def __str__(self):
+        return self.flight_number
+
+class Plane(models.Model):
+    model = models.CharField(max_length=100, null=False)
+    second_class_capacity = models.IntegerField(null=False)
+    first_class_capacity = models.IntegerField(null=False)
+
+    def __str__(self):
+        return self.model
+
+class Track(models.Model):
+    track_number = models.CharField(max_length=10, null=False)
+    length = models.IntegerField(null=False)
+    airport = models.ForeignKey('Airport', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.track_number
+
+class Airport(models.Model):
+    name = models.CharField(max_length=100, null=False)
+    location = models.CharField(max_length=100, null=False)
+
+    def __str__(self):
+        return self.name
+
+class Working(models.Model):
+    staff = models.ForeignKey(Staff, on_delete=models.CASCADE)
+    flight = models.ForeignKey(Flight, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.staff} working on {self.flight}"
+
+class Group(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+class Permission(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name

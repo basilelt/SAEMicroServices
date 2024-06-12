@@ -1,14 +1,11 @@
-#api_staff.views
-from django.shortcuts import render
+# api_staff/views.py
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework import status, generics
 from .serializers import StaffLoginSerializer, FlightSerializer
 from .models import Flight
 from django.contrib.auth import get_user_model
-from .serializers import FlightSerializer
-from rest_framework import generics
+from rest_framework_simplejwt.tokens import RefreshToken
 
 User = get_user_model()
 
@@ -37,8 +34,7 @@ class AddFlightView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class DeleteFlightView(APIView):
-    def delete(self, request):
-        flight_id = request.data.get('flight_id')
+    def delete(self, request, flight_id):
         try:
             flight = Flight.objects.get(id=flight_id)
             flight.delete()
@@ -48,9 +44,12 @@ class DeleteFlightView(APIView):
 
 class UpdateFlightView(APIView):
     def patch(self, request, flight_id):
-        flight = Flight.objects.get(id=flight_id)
-        serializer = FlightSerializer(flight, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "Flight updated successfully"}, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            flight = Flight.objects.get(id=flight_id)
+            serializer = FlightSerializer(flight, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({"message": "Flight updated successfully"}, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Flight.DoesNotExist:
+            return Response({"message": "Flight not found"}, status=status.HTTP_404_NOT_FOUND)
