@@ -19,4 +19,8 @@ class StaffLoginSerializer(serializers.Serializer):
 class FlightSerializer(serializers.ModelSerializer):
     class Meta:
         model = Flight
-        fields = ['flight_number', 'departure', 'arrival', 'origin', 'destination']
+        fields = ['flight_number', 'departure', 'arrival', 'departure_time', 'arrival_time']
+        extra_kwargs = {
+            'departure_time': {'required': False},
+            'arrival_time': {'required': False}
+        }
