@@ -10,6 +10,8 @@ services:
     networks:
       - back_db_front
       - back_db_api
+    ports:
+      - "5432:5432"
     hostname: db
 
   nats:
@@ -20,6 +22,8 @@ services:
     restart: unless-stopped
     networks:
       - back_nats_api
+    ports:
+      - "4222:4222"
     hostname: nats
 
   django_api:
@@ -37,6 +41,8 @@ services:
     networks:
       - back_db_api
       - back_nats_api
+    ports:
+      - "8000:8000"
     hostname: django_api
     depends_on:
       - "db"
@@ -57,18 +63,11 @@ services:
     restart: unless-stopped
     networks:
      - back_db_front
+    ports:
+      - "8001:8000"
     hostname: django_frontend
     depends_on:
      - "db"
-  
-  nginx:
-    build: ./Frontend/nginx
-    volumes:
-      - static:/usr/share/nginx/html/static
-    restart: unless-stopped
-    hostname: nginx
-    depends_on:
-      - "django_frontend"
 
 volumes:
   db:

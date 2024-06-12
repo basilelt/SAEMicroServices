@@ -16,7 +16,7 @@ import os
 # Determine the running environment
 ENVIRONMENT = os.getenv('DJANGO_ENVIRONMENT', 'development')
 
-if ENVIRONMENT != 'development':
+if ENVIRONMENT == 'production':
     import daphne
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -30,12 +30,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-99(zxsdor&rf!8))*ibklrk5+mf2a8#9e77a5sjpt6$_1_w)u@'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-if ENVIRONMENT == 'development':
+if ENVIRONMENT == 'development' or ENVIRONMENT == 'test':
     DEBUG = True
 else:
     DEBUG = False
     
-if ENVIRONMENT == 'development':
+if ENVIRONMENT == 'development' or ENVIRONMENT == 'test':
     ALLOWED_HOSTS = []
 else:
     ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS').split(',')
@@ -66,7 +66,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-if ENVIRONMENT != 'development':
+if ENVIRONMENT == 'production':
     CSRF_TRUSTED_ORIGINS = os.getenv('DJANGO_ORIGIN').split(',')
 
 ROOT_URLCONF = 'airline.urls'
@@ -87,7 +87,7 @@ TEMPLATES = [
     },
 ]
 
-if ENVIRONMENT == 'development':
+if ENVIRONMENT == 'development' or ENVIRONMENT == 'test':
     WSGI_APPLICATION = 'airline.wsgi.application'
 else:
     ASGI_APPLICATION = 'airline.asgi.application'
@@ -112,8 +112,8 @@ else:
             'NAME': os.getenv('DJANGO_DB_NAME'),
             'USER': os.getenv('DJANGO_DB_USER'),
             'PASSWORD': os.getenv('DJANGO_DB_PASSWORD'),
-            'HOST': os.getenv('DJANGO_DB_HOST'),
-            'PORT': os.getenv('DJANGO_DB_PORT'),
+            'HOST': 'db',
+            'PORT': '5432',
         }
     }
 
