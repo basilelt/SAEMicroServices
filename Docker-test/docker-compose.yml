@@ -15,10 +15,7 @@ services:
     hostname: db
 
   nats:
-    build: ./NATS
-    environment:
-      NATS_USER: ${NATS_USER}
-      NATS_PASSWORD: ${NATS_PASSWORD}
+    image: nats:2.10
     restart: unless-stopped
     networks:
       - back_nats_api
@@ -27,7 +24,9 @@ services:
     hostname: nats
 
   django_api:
-    build: ./API
+    build:
+      context: ../
+      dockerfile: ./Docker-test/API/Dockerfile
     environment:
       DJANGO_ENVIRONMENT: ${DJANGO_ENVIRONMENT}
       DJANGO_ALLOWED_HOSTS: ${DJANGO_API_HOSTS}
@@ -37,6 +36,8 @@ services:
       DJANGO_DB_PASSWORD: ${POSTGRES_PASSWORD}
       DJANGO_DB_HOST: db  # This is the hostname in docker-compose
       DJANGO_DB_PORT: 5432  # Default PostgreSQL port
+    volumes:
+      - ../Django_api/:/app
     restart: unless-stopped
     networks:
       - back_db_api
@@ -48,7 +49,9 @@ services:
       - "db"
 
   django_frontend:
-    build: ./Frontend/Django
+    build: 
+      context: ../
+      dockerfile: ./Docker-test/Frontend/Django/Dockerfile
     environment:
       DJANGO_ENVIRONMENT: ${DJANGO_ENVIRONMENT}
       DJANGO_ALLOWED_HOSTS: ${DJANGO_FRONT_HOSTS}
@@ -59,19 +62,18 @@ services:
       DJANGO_DB_HOST: db  # This is the hostname in docker-compose
       DJANGO_DB_PORT: 5432  # Default PostgreSQL port
     volumes:
-      - static:/app/monprojet/monapp/static
+      - ../Django_Frontend/:/app
     restart: unless-stopped
     networks:
      - back_db_front
     ports:
-      - "8001:8000"
+      - "8010:8000"
     hostname: django_frontend
     depends_on:
      - "db"
 
 volumes:
   db:
-  static:
 
 networks:
   back_db_front:

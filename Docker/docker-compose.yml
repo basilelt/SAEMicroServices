@@ -23,7 +23,9 @@ services:
     hostname: nats
 
   django_api:
-    build: ./API
+    build:
+      context: ../
+      dockerfile: ./Docker-test/API/Dockerfile
     environment:
       DJANGO_ENVIRONMENT: ${DJANGO_ENVIRONMENT}
       DJANGO_ALLOWED_HOSTS: ${DJANGO_API_HOSTS}
@@ -42,7 +44,9 @@ services:
       - "db"
 
   django_frontend:
-    build: ./Frontend/Django
+    build: 
+      context: ../
+      dockerfile: ./Docker-test/Frontend/Django/Dockerfile
     environment:
       DJANGO_ENVIRONMENT: ${DJANGO_ENVIRONMENT}
       DJANGO_ALLOWED_HOSTS: ${DJANGO_FRONT_HOSTS}

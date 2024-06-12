@@ -1,6 +1,6 @@
 FROM python:3.12
 
-ADD ../../../Django_api/ /app
+ADD ./Django_api/ /app
 
 RUN set -ex \
     && python -m venv /env \
