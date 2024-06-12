@@ -1,20 +1,57 @@
-table app_user {
+table client {
   id int [pk, increment]
-  email varchar(255) [unique, not null]
-  password varchar(255) [not null]
   username varchar(150) [unique, not null]
+  email varchar [unique, not null]
+  password varchar(255) [not null]
   first_name varchar(30) [not null]
   last_name varchar(30) [not null]
+  is_staff bool
+  is_superuser bool
 }
 
 table staff {
-  id int [ref: > app_user.id, pk]
+  id int [pk, increment]
+  username varchar(150) [unique, not null]
+  email varchar [unique, not null]
+  password varchar(255) [not null]
+  is_staff bool
+  is_superuser bool
   staff_type_id int [ref: > staff_type.id]
 }
 
-table staff_type {
+Table staff_type {
   id int [pk, increment]
   type varchar(100) [not null]
+}
+
+table group {
+  id int [pk, increment]
+  name varchar
+}
+
+table client_groups {
+  client_id int [ref: > client.id]
+  group_id int [ref: > group.id]
+}
+
+table staff_groups {
+  staff_id int [ref: > staff.id]
+  group_id int [ref: > group.id]
+}
+
+table permission {
+  id int [pk, increment]
+  name varchar
+}
+
+table client_permissions {
+  client_id int [ref: > client.id]
+  permission_id int [ref: > permission.id]
+}
+
+table staff_permissions {
+  staff_id int [ref: > staff.id]
+  permission_id int [ref: > permission.id]
 }
 
 table flight {
@@ -39,7 +76,7 @@ table booking {
   booking_date timestamptz [default: `CURRENT_TIMESTAMP`]
   price float [not null]
   booking_type_id varchar [ref: > booking_type.id]
-  app_user_id int [ref: > app_user.id]
+  app_user_id int [ref: > client.id]
   flight_id int [ref: > flight.id]
 }
 
