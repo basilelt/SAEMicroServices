@@ -1,0 +1,68 @@
+services:
+  db:
+    build: ./DB
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - db:/var/lib/postgresql/data
+    networks:
+      - back_db_front
+      - back_db_api
+    hostname: db
+
+  django_api:
+    build: ./API
+    environment:
+      DJANGO_ENVIRONMENT: ${DJANGO_ENVIRONMENT}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_API_HOSTS}
+      DJANGO_ORIGIN: ${DJANGO_API_ORIGIN}
+      DJANGO_DB_NAME: ${POSTGRES_DB}
+      DJANGO_DB_USER: ${POSTGRES_USER}
+      DJANGO_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DJANGO_DB_HOST: db  # This is the hostname in docker-compose
+      DJANGO_DB_PORT: 5432  # Default PostgreSQL port
+    restart: unless-stopped
+    networks:
+      - back_db_api
+    hostname: django_api
+    depends_on:
+      - "db"
+
+  django_frontend:
+    build: ./Frontend/Django
+    environment:
+      DJANGO_ENVIRONMENT: ${DJANGO_ENVIRONMENT}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_FRONT_HOSTS}
+      DJANGO_ORIGIN: ${DJANGO_FRONT_ORIGIN}
+      DJANGO_DB_NAME: ${POSTGRES_DB}
+      DJANGO_DB_USER: ${POSTGRES_USER}
+      DJANGO_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DJANGO_DB_HOST: db  # This is the hostname in docker-compose
+      DJANGO_DB_PORT: 5432  # Default PostgreSQL port
+    volumes:
+      - static:/app/monprojet/monapp/static
+    restart: unless-stopped
+    networks:
+     - back_db_front
+    hostname: django_frontend
+    depends_on:
+     - "db"
+  
+  nginx:
+    build: ./Frontend/nginx
+    volumes:
+      - static:/usr/share/nginx/html/static
+    restart: unless-stopped
+    hostname: nginx
+    depends_on:
+      - "django_frontend"
+
+volumes:
+  db:
+  static:
+
+networks:
+  back_db_front:
+  back_db_api:
