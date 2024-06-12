@@ -23,7 +23,7 @@ mimetypes.add_type("image/webp", ".webp", True)
 # Determine the running environment
 ENVIRONMENT = os.getenv('DJANGO_ENVIRONMENT', 'development')
 
-if ENVIRONMENT != 'development':
+if ENVIRONMENT == 'production':
     import daphne
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -38,12 +38,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-ru2*_zb24rz0rxy)h+ac7&!=*+jck1$15%2tkov#g*c(u&z@dd'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-if ENVIRONMENT == 'development':
+if ENVIRONMENT == 'development' or ENVIRONMENT == 'test':
     DEBUG = True
 else:
     DEBUG = False
     
-if ENVIRONMENT == 'development':
+if ENVIRONMENT == 'development' or ENVIRONMENT == 'test':
     ALLOWED_HOSTS = []
 else:
     ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS').split(',')
@@ -58,7 +58,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'monapp',
-    'rest_framework',
+    'djecrety',
 ]
 
 MIDDLEWARE = [
@@ -71,7 +71,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-if ENVIRONMENT != 'development':
+if ENVIRONMENT == 'production':
     CSRF_TRUSTED_ORIGINS = os.getenv('DJANGO_ORIGIN').split(',')
 
 ROOT_URLCONF = 'monprojet.urls'
@@ -92,7 +92,7 @@ TEMPLATES = [
     },
 ]
 
-if ENVIRONMENT == 'development':
+if ENVIRONMENT == 'development' or ENVIRONMENT == 'test':
     WSGI_APPLICATION = 'monprojet.wsgi.application'
 else:
     ASGI_APPLICATION = 'monprojet.asgi.application'
@@ -116,8 +116,8 @@ else:
             'NAME': os.getenv('DJANGO_DB_NAME'),
             'USER': os.getenv('DJANGO_DB_USER'),
             'PASSWORD': os.getenv('DJANGO_DB_PASSWORD'),
-            'HOST': os.getenv('DJANGO_DB_HOST'),
-            'PORT': os.getenv('DJANGO_DB_PORT'),
+            'HOST': 'db',
+            'PORT': '5432',
         }
     }
 

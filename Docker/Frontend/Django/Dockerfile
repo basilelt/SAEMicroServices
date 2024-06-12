@@ -1,6 +1,6 @@
 FROM python:3.12
 
-ADD ../../../Django_Frontend/ /app
+ADD ./Django_Frontend/ /app
 
 RUN set -ex \
     && python -m venv /env \
