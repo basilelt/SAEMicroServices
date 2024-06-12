@@ -48,11 +48,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'api_client',
     'api_staff',
-<<<<<<< HEAD
     'drf_yasg',
-=======
     'djecrety',
->>>>>>> 53bcbeb64be1e6e12069cb9793a8c74f3dcf46cb
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
