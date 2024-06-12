@@ -10,11 +10,21 @@ from rest_framework import generics
 from .models import Client
 from django.contrib.auth import get_user_model
 from .serializers import UserSerializer
+
 User = get_user_model()
 
 class UserListView(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+class UpdateUserView(APIView):
+    def patch(self, request, user_id):
+        user = User.objects.get(id=user_id)
+        serializer = UserSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "User updated successfully"}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class RegisterView(APIView):
     def post(self, request):
@@ -35,3 +45,9 @@ class LoginView(APIView):
                 'access': str(refresh.access_token),
             })
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class DeleteUserView(APIView):
+    def delete(self, request, user_id):
+        user = User.objects.get(id=user_id)
+        user.delete()
+        return Response({"message": "User deleted successfully"}, status=status.HTTP_204_NO_CONTENT)

@@ -11,7 +11,7 @@ class StaffLoginSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
 
     def validate(self, data):
-        user = authenticate(**data)
+        user = authenticate(username=data['username'], password=data['password'])
         if user and user.is_active:
             return user
         raise serializers.ValidationError("Invalid credentials")
@@ -19,4 +19,8 @@ class StaffLoginSerializer(serializers.Serializer):
 class FlightSerializer(serializers.ModelSerializer):
     class Meta:
         model = Flight
-        fields = ['flight_number', 'departure', 'arrival', 'origin', 'destination']
+        fields = ['id', 'flight_number', 'departure', 'arrival', 'departure_time', 'arrival_time']
+        extra_kwargs = {
+            'departure_time': {'required': False},
+            'arrival_time': {'required': False}
+        }
