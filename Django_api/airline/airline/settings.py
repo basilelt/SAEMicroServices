@@ -88,9 +88,9 @@ TEMPLATES = [
 ]
 
 if ENVIRONMENT == 'development':
-    WSGI_APPLICATION = 'monprojet.wsgi.application'
+    WSGI_APPLICATION = 'airline.wsgi.application'
 else:
-    ASGI_APPLICATION = 'monprojet.asgi.application'
+    ASGI_APPLICATION = 'airline.asgi.application'
 
 
 # Database
