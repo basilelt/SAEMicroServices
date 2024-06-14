@@ -27,7 +27,7 @@ def client_create_view(request):
             return redirect('success')
     else:
         form = ClientForm()
-    return render(request, 'client_form.html', {'form': form})
+    return render(request, 'monapp/client_form.html', {'form': form})
 
 def staff_create_view(request):
     if request.method == 'POST':
@@ -48,4 +48,4 @@ def staff_create_view(request):
             return redirect('success')
     else:
         form = StaffForm()
-    return render(request, 'staff_form.html', {'form': form})
+    return render(request, 'monapp/staff_form.html', {'form': form})
