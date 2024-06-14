@@ -14,14 +14,14 @@ services:
     ports:
       - "5432:5432"
     hostname: db
-  
+
   pgadmin:
-    build:
+    build: 
       context: ./DB/PgAdmin
       args:
-        POSTGRES_DB: ${POSTGRES_DB}
         POSTGRES_USER: ${POSTGRES_USER}
         POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+        POSTGRES_DB: ${POSTGRES_DB}
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
@@ -62,7 +62,7 @@ services:
       DJANGO_DB_USER: ${POSTGRES_USER}
       DJANGO_DB_PASSWORD: ${POSTGRES_PASSWORD}
       DJANGO_DB_HOST: db  # This is the hostname in docker-compose
-      DJANGO_DB_PORT: 5432  # Default PostgreSQL port
+      DJANGO_DB_PORT: 5432
     volumes:
       - ../Django_api/:/app
     restart: unless-stopped
@@ -87,7 +87,7 @@ services:
       DJANGO_DB_USER: ${POSTGRES_USER}
       DJANGO_DB_PASSWORD: ${POSTGRES_PASSWORD}
       DJANGO_DB_HOST: db  # This is the hostname in docker-compose
-      DJANGO_DB_PORT: 5432  # Default PostgreSQL port
+      DJANGO_DB_PORT: 5432
     volumes:
       - ../Django_Frontend/:/app
     restart: unless-stopped
