@@ -1,0 +1,10 @@
+{% extends 'monapp/base.html' %}
+
+{% block content %}
+  <h2>Staff</h2>
+  <ul>
+    {% for staff_member in staff %}
+      <li>{{ staff_member.user.username }} - {{ staff_member.staff_type.name }}</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

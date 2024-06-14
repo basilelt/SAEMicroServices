@@ -1,14 +1,10 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Create Staff</title>
-</head>
-<body>
+{% extends 'monapp/base.html' %}
+
+{% block content %}
     <h1>Create Staff</h1>
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit">Create</button>
     </form>
-</body>
-</html>
+{% endblock %}

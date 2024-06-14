@@ -1,19 +1,13 @@
 table client {
   id int [pk, increment]
-  username varchar(150) [unique, not null]
-  email varchar [unique, not null]
-  password varchar(255) [not null]
-  first_name varchar(30) [not null]
-  last_name varchar(30) [not null]
+  user varchar(150) [unique, not null]
   is_staff bool
   is_superuser bool
 }
 
 table staff {
   id int [pk, increment]
-  username varchar(150) [unique, not null]
-  email varchar [unique, not null]
-  password varchar(255) [not null]
+  user varchar(150) [unique, not null]
   is_staff bool
   is_superuser bool
   staff_type int [ref: > staff_type.id]
