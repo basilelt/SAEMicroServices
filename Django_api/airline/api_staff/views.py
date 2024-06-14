@@ -35,10 +35,13 @@ class AddFlightView(generics.CreateAPIView):
 class UpdateFlightView(generics.UpdateAPIView):
     queryset = Flight.objects.all()
     serializer_class = FlightSerializer
+    lookup_field = 'pk'
 
 class DeleteFlightView(generics.DestroyAPIView):
     queryset = Flight.objects.all()
     serializer_class = FlightSerializer
+    lookup_field = 'pk'
+
 
 class StaffLoginView(APIView):
     def post(self, request):

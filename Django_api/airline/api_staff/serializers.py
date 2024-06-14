@@ -10,16 +10,19 @@ class PlaneSerializer(serializers.ModelSerializer):
     class Meta:
         model = Plane
         fields = ['id', 'model', 'first_class_capacity', 'second_class_capacity']
+        ref_name = 'PlaneStaff'
 
 class TrackSerializer(serializers.ModelSerializer):
     class Meta:
         model = Track
         fields = ['id', 'track_number', 'length', 'airport']
+        ref_name = 'TrackStaff'
 
 class AirportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Airport
         fields = ['id', 'name', 'location']
+        ref_name = 'AirportStaff'
 
 class FlightSerializer(serializers.ModelSerializer):
     plane = PlaneSerializer(read_only=True)
@@ -33,6 +36,7 @@ class FlightSerializer(serializers.ModelSerializer):
             'departure': {'required': False},
             'arrival': {'required': False}
         }
+        ref_name = 'FlightStaff'
 
 class StaffLoginSerializer(serializers.Serializer):
     username = serializers.CharField()

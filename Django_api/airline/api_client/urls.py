@@ -1,6 +1,6 @@
 # api_client/urls.py
 from django.urls import path
-from .views import RegisterView, LoginView, UserListView, UpdateUserView, DeleteUserView, FlightListView, BookingCreateView
+from .views import RegisterView, LoginView, UserListView, UpdateUserView, DeleteUserView, FlightListView
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
@@ -9,5 +9,4 @@ urlpatterns = [
     path('update-user/<int:pk>/', UpdateUserView.as_view(), name='update_user'),
     path('delete-user/<int:pk>/', DeleteUserView.as_view(), name='delete_user'),
     path('flights/', FlightListView.as_view(), name='flight_list'),
-    path('bookings/create/', BookingCreateView.as_view(), name='create_booking'),
 ]

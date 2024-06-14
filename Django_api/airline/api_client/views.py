@@ -1,21 +1,17 @@
+# api_client/views.py
 from django.shortcuts import render
 from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions, generics
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import RegisterSerializer, LoginSerializer, UserSerializer, FlightSerializer, BookingSerializer
+from .serializers import RegisterSerializer, LoginSerializer, UserSerializer, FlightSerializer
 from api_staff.models import Flight  # 确保只从api_staff.models导入Flight
 from api_common.models import Booking  # 从api_common.models导入Booking
 from rest_framework.permissions import IsAuthenticated  # 导入IsAuthenticated
 
 User = get_user_model()
 
-
-class BookingCreateView(generics.CreateAPIView):
-    queryset = Booking.objects.all()
-    serializer_class = BookingSerializer
-    permission_classes = [IsAuthenticated]
 
 class FlightListView(generics.ListAPIView):
     queryset = Flight.objects.all()
