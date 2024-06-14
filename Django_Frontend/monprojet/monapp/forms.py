@@ -1,5 +1,6 @@
 # Django_Frontend/monprojet/monapp/forms.py
 from django import forms
+from .models import Client, Staff, StaffType
 
 class ClientForm(forms.Form):
     username = forms.CharField(max_length=150)
@@ -17,3 +18,8 @@ class StaffForm(forms.Form):
     is_staff = forms.BooleanField(required=False)
     is_superuser = forms.BooleanField(required=False)
     staff_type = forms.IntegerField()
+    
+class StaffTypeForm(forms.ModelForm):
+    class Meta:
+        model = StaffType
+        fields = ['type']

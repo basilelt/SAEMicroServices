@@ -11,9 +11,8 @@ ENV POSTGRES_DB=${POSTGRES_DB} \
     POSTGRES_USER=${POSTGRES_USER} \
     POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
 
-COPY ./generate_servers_json.sh /generate_servers_json.sh
-RUN chmod +x /generate_servers_json.sh && \
-    /generate_servers_json.sh > /servers.json
+ADD ./generate_servers_json.sh /generate_servers_json.sh
+RUN chmod +x /generate_servers_json.sh && /generate_servers_json.sh > /servers.json
 
 # Final stage
 FROM dpage/pgadmin4:8.8

@@ -2,7 +2,8 @@ import requests
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.models import User
-from .forms import ClientForm, StaffForm
+from .forms import ClientForm, StaffForm, StaffTypeForm
+from .models import Staff, Client, StaffType
 
 # Create your views here.
 
@@ -27,25 +28,53 @@ def client_create_view(request):
             return redirect('success')
     else:
         form = ClientForm()
-    return render(request, 'client_form.html', {'form': form})
+    return render(request, 'monapp/create_client.html', {'form': form})
 
 def staff_create_view(request):
+        if request.method == 'POST':
+            form = StaffForm(request.POST)
+            if form.is_valid():
+                data = form.cleaned_data
+                user = User.objects.create_user(
+                    username=data['username'],
+                    email=data['email'],
+                    password=data['password'],
+                    is_staff=data['is_staff'],
+                    is_superuser=data['is_superuser']
+                )
+                user.staffprofile.staff_type = data['staff_type']
+                user.staffprofile.save()
+                user.save()
+                messages.success(request, 'Staff created successfully')
+                return redirect('success')
+        else:
+            form = StaffForm()
+        return render(request, 'monapp/create_staff.html', {'form': form})
+
+def create_staff_type(request):
     if request.method == 'POST':
-        form = StaffForm(request.POST)
+        form = StaffTypeForm(request.POST)
         if form.is_valid():
-            data = form.cleaned_data
-            user = User.objects.create_user(
-                username=data['username'],
-                email=data['email'],
-                password=data['password'],
-                is_staff=data['is_staff'],
-                is_superuser=data['is_superuser']
-            )
-            user.staffprofile.staff_type = data['staff_type']
-            user.staffprofile.save()
-            user.save()
-            messages.success(request, 'Staff created successfully')
-            return redirect('success')
+            form.save()
+            return redirect('home')
     else:
-        form = StaffForm()
-    return render(request, 'staff_form.html', {'form': form})
+        form = StaffTypeForm()
+    return render(request, 'monapp/create_staff_type.html', {'form': form})
+
+def view_staff(request):
+    staff = Staff.objects.all()
+    return render(request, 'monapp/view_staff.html', {'staff': staff})
+
+def view_clients(request):
+    clients = Client.objects.all()
+    return render(request, 'monapp/view_clients.html', {'clients': clients})
+
+def view_staff_types(request):
+    staff_types = StaffType.objects.all()
+    return render(request, 'monapp/view_staff_types.html', {'staff_types': staff_types})
+
+def success(request):
+    return render(request, 'monapp/success.html')
+
+def home(request):
+    return render(request, 'monapp/home.html')

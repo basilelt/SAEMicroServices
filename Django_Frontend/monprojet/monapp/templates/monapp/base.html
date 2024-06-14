@@ -1,0 +1,19 @@
+<!-- base.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Metadonnées, CSS, JavaScript, etc. -->
+</head>
+<body>
+    <header>
+        <!-- Ajoutez votre bouton de retour à la page d'accueil ici -->
+        <a href="{% url 'home' %}">Home</a>
+    </header>
+
+    <main>
+        {% block content %}
+        <!-- Le contenu spécifique à chaque page sera inséré ici -->
+        {% endblock %}
+    </main>
+</body>
+</html>
