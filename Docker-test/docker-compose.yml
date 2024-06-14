@@ -15,14 +15,6 @@ services:
       - "5432:5432"
     hostname: db
 
-  encryptor:
-    build:
-      context: ./encryptor
-      args:
-        PGADMIN_DEFAULT_PASSWORD_CLEAR: ${PGADMIN_DEFAULT_PASSWORD_CLEAR}
-    volumes:
-      - ./DB/PgAdmin/pgadmin.env:/pgadmin.env
-
   pgadmin:
     build: 
       context: ./DB/PgAdmin
@@ -32,9 +24,7 @@ services:
         POSTGRES_DB: ${POSTGRES_DB}
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
-    env_file:
-      - .env
-      - ./DB/PgAdmin/pgadmin.env
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
     volumes:
       - pgadmin:/pgadmin4
     networks:
