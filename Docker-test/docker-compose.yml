@@ -34,7 +34,6 @@ services:
     hostname: pgadmin
     depends_on:
       - "db"
-      - "encryptor"
 
   nats:
     image: nats:2.10
