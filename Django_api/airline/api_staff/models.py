@@ -5,7 +5,7 @@ from django.db import models
 class StaffManager(BaseUserManager):
     def create_user(self, username, email, password=None, **extra_fields):
         if not email:
-            raise ValueError('The Email field must be set')
+            raise ValueError('Email字段必须填写')
         email = self.normalize_email(email)
         user = self.model(username=username, email=email, **extra_fields)
         user.set_password(password)
@@ -59,9 +59,9 @@ class Flight(models.Model):
     flight_number = models.CharField(max_length=10, unique=True)
     departure = models.DateTimeField()
     arrival = models.DateTimeField()
-    plane = models.ForeignKey(Plane, on_delete=models.CASCADE, db_column='plane')
-    track_origin = models.ForeignKey('Track', related_name='track_origins', on_delete=models.CASCADE, db_column='track_origin')
-    track_destination = models.ForeignKey('Track', related_name='track_destinations', on_delete=models.CASCADE, db_column='track_destination')
+    plane = models.ForeignKey(Plane, on_delete=models.CASCADE, db_column='plane', default=1)
+    track_origin = models.ForeignKey('Track', related_name='track_origins', on_delete=models.CASCADE, db_column='track_origin', default=1)
+    track_destination = models.ForeignKey('Track', related_name='track_destinations', on_delete=models.CASCADE, db_column='track_destination', default=1)
 
     class Meta:
         db_table = 'flight'
