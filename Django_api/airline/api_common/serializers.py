@@ -1,7 +1,7 @@
 #api_common/serializers.py
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Client, Staff, Flight, Booking, Airport, Plane
+from .models import Flight, Booking, Airport, Plane
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
