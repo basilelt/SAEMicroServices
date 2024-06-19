@@ -49,8 +49,159 @@ Cette API intègre toutes les fonctionnalités des clients et du personnel, gara
 ## Exécution
 
 Démarrer
+
+ le serveur de développement :
+```bash
+python manage.py runserver
 ```
-```markdown
+
+## Points de Terminaison
+
+### Gestion des Utilisateurs
+
+- **Obtenir la liste des utilisateurs (seulement pour les administrateurs)**
+  - **Point de Terminaison**: `/api/users/`
+  - **Méthode**: GET
+  - **Description**: Obtenir la liste de tous les utilisateurs.
+
+- **Mettre à jour un utilisateur**
+  - **Point de Terminaison**: `/api/users/<int:pk>/`
+  - **Méthode**: PUT
+  - **Description**: Mettre à jour les informations d'un utilisateur.
+
+- **Supprimer un utilisateur**
+  - **Point de Terminaison**: `/api/users/<int:pk>/`
+  - **Méthode**: DELETE
+  - **Description**: Supprimer un utilisateur.
+
+### Gestion des Vols
+
+- **Obtenir tous les vols**
+  - **Point de Terminaison**: `/api/flights/`
+  - **Méthode**: GET
+  - **Description**: Obtenir la liste de tous les vols disponibles.
+
+- **Ajouter un nouveau vol (seulement pour le personnel)**
+  - **Point de Terminaison**: `/api/flights/`
+  - **Méthode**: POST
+  - **Description**: Ajouter un nouveau vol.
+
+- **Mettre à jour les informations d'un vol (seulement pour le personnel)**
+  - **Point de Terminaison**: `/api/flights/<int:pk>/`
+  - **Méthode**: PUT
+  - **Description**: Mettre à jour les informations d'un vol.
+
+- **Supprimer un vol (seulement pour le personnel)**
+  - **Point de Terminaison**: `/api/flights/<int:pk>/`
+  - **Méthode**: DELETE
+  - **Description**: Supprimer un vol.
+
+### Gestion des Réservations
+
+- **Obtenir la liste des réservations d'un utilisateur**
+  - **Point de Terminaison**: `/api/bookings/`
+  - **Méthode**: GET
+  - **Description**: Obtenir la liste de toutes les réservations de l'utilisateur authentifié.
+
+- **Obtenir les détails d'une réservation**
+  - **Point de Terminaison**: `/api/bookings/<int:pk>/`
+  - **Méthode**: GET
+  - **Description**: Obtenir les détails d'une réservation spécifique.
+
+- **Créer une nouvelle réservation**
+  - **Point de Terminaison**: `/api/bookings/`
+  - **Méthode**: POST
+  - **Description**: Créer une nouvelle réservation.
+
+- **Mettre à jour une réservation**
+  - **Point de Terminaison**: `/api/bookings/<int:pk>/`
+  - **Méthode**: PUT
+  - **Description**: Mettre à jour les informations d'une réservation.
+
+- **Supprimer une réservation**
+  - **Point de Terminaison**: `/api/bookings/<int:pk>/`
+  - **Méthode**: DELETE
+  - **Description**: Supprimer une réservation.
+
+### Gestion des Aéroports (seulement pour le personnel)
+
+- **Obtenir la liste de tous les aéroports**
+  - **Point de Terminaison**: `/api/airports/`
+  - **Méthode**: GET
+  - **Description**: Obtenir la liste de tous les aéroports.
+
+- **Obtenir les détails d'un aéroport**
+  - **Point de Terminaison**: `/api/airports/<int:pk>/`
+  - **Méthode**: GET
+  - **Description**: Obtenir les détails d'un aéroport spécifique.
+
+- **Ajouter un nouvel aéroport**
+  - **Point de Terminaison**: `/api/airports/`
+  - **Méthode**: POST
+  - **Description**: Ajouter un nouvel aéroport.
+
+- **Mettre à jour les informations d'un aéroport**
+  - **Point de Terminaison**: `/api/airports/<int:pk>/`
+  - **Méthode**: PUT
+  - **Description**: Mettre à jour les informations d'un aéroport.
+
+- **Supprimer un aéroport**
+  - **Point de Terminaison**: `/api/airports/<int:pk>/`
+  - **Méthode**: DELETE
+  - **Description**: Supprimer un aéroport.
+
+### Gestion des Avions (seulement pour le personnel)
+
+- **Obtenir la liste de tous les avions**
+  - **Point de Terminaison**: `/api/planes/`
+  - **Méthode**: GET
+  - **Description**: Obtenir la liste de tous les avions.
+
+- **Obtenir les détails d'un avion**
+  - **Point de Terminaison**: `/api/planes/<int:pk>/`
+  - **Méthode**: GET
+  - **Description**: Obtenir les détails d'un avion spécifique.
+
+- **Ajouter un nouvel avion**
+  - **Point de Terminaison**: `/api/planes/`
+  - **Méthode**: POST
+  - **Description**: Ajouter un nouvel avion.
+
+- **Mettre à jour les informations d'un avion**
+  - **Point de Terminaison**: `/api/planes/<int:pk>/`
+  - **Méthode**: PUT
+  - **Description**: Mettre à jour les informations d'un avion.
+
+- **Supprimer un avion**
+  - **Point de Terminaison**: `/api/planes/<int:pk>/`
+  - **Méthode**: DELETE
+  - **Description**: Supprimer un avion.
+
+### Tous les Enregistrements de Réservation (seulement pour le personnel)
+
+- **Obtenir tous les enregistrements de réservation**
+  - **Point de Terminaison**: `/api/all-bookings/`
+  - **Méthode**: GET
+  - **Description**: Obtenir la liste de toutes les réservations.
+
+## Modèles
+
+Voici les principaux modèles de données utilisés dans ce projet :
+
+- **StaffType**: Type de personnel.
+- **Group**: Informations sur les groupes d'utilisateurs.
+- **ClientGroups**: Relation entre clients et groupes.
+- **StaffGroups**: Relation entre le personnel et les groupes.
+- **Permission**: Informations sur les permissions.
+- **ClientPermissions**: Relation entre les clients et les permissions.
+- **StaffPermissions**: Relation entre le personnel et les permissions.
+- **Flight**: Informations sur les vols, y compris le numéro de vol, les heures de départ et d'arrivée, les avions et les itinéraires.
+- **Booking**: Informations sur les réservations, y compris la date de réservation, le prix, le type de réservation, le client et le vol.
+- **Airport**: Informations sur les aéroports, y compris le nom et la localisation.
+- **Plane**: Informations sur les avions, y compris le modèle, la capacité en classe économique et en première classe.
+- **Track**: Informations sur les pistes, y compris le numéro de piste, la longueur et l'aéroport auquel elles appartiennent.
+
+N'hésitez pas à contribuer au code, soumettre des problèmes ou des suggestions !
 # 航班预订系统 API
 
 本项目是一个基于微服务的航班预订系统。系统允许客户查看航班、进行预订和管理他们的预订。工作人员可以管理航班、机场、飞机，并查看所有的预订记录。项目主要服务：`api_common`。
