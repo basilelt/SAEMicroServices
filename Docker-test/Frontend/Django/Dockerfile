@@ -12,6 +12,6 @@ WORKDIR /app/monprojet
 ENV VIRTUAL_ENV /env
 ENV PATH /env/bin:$PATH
 
-RUN python manage.py djecrety -s
+CMD ["python", "manage.py", "runserver", "0.0.0.0:80"]
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+EXPOSE 80

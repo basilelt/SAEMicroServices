@@ -12,6 +12,6 @@ WORKDIR /app/monprojet
 ENV VIRTUAL_ENV /env
 ENV PATH /env/bin:$PATH
 
-RUN python manage.py djecrety -s
+CMD ["daphne", "-b", "0.0.0.0", "-p", "80", "monprojet.asgi:application"]
 
-CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "monprojet.asgi:application"]
+EXPOSE 80

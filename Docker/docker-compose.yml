@@ -1,6 +1,6 @@
 services:
   db:
-    build: ./DB
+    image: postgres:16.3
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -8,8 +8,7 @@ services:
     volumes:
       - db:/var/lib/postgresql/data
     networks:
-      - back_db_front
-      - back_db_api
+      - proxy
     hostname: db
 
   nats:
@@ -22,7 +21,9 @@ services:
     command: "-c /etc/nats/nats.conf"
     restart: unless-stopped
     networks:
-      - back_nats_api
+      - proxy
+    ports:
+      - "4222:4222"
     hostname: nats
 
   django_api:
@@ -31,17 +32,24 @@ services:
       dockerfile: ./Docker-test/API/Dockerfile
     environment:
       DJANGO_ENVIRONMENT: ${DJANGO_ENVIRONMENT}
-      DJANGO_ALLOWED_HOSTS: ${DJANGO_API_HOSTS}
-      DJANGO_ORIGIN: ${DJANGO_API_ORIGIN}
+      DOMAIN: ${DOMAIN}
       DJANGO_DB_NAME: ${POSTGRES_DB}
       DJANGO_DB_USER: ${POSTGRES_USER}
       DJANGO_DB_PASSWORD: ${POSTGRES_PASSWORD}
       DJANGO_DB_HOST: db  # This is the hostname in docker-compose
       DJANGO_DB_PORT: 5432  # Default PostgreSQL port
+    volumes:
+      - ../Django_api/:/app
     restart: unless-stopped
     networks:
-      - back_db_api
-      - back_nats_api
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.django_api.rule=Host(`api.${DOMAIN}`)"
+      - "traefik.http.routers.django_api.entrypoints=websecure"
+      - "traefik.http.routers.django_api.tls=true"
+      - "traefik.http.routers.django_api.middlewares=redirect-to-https@file" # Note the "@file" to specify it's defined in a file
+      - "traefik.http.services.django_api.loadbalancer.server.url=http://django_api:80"
     hostname: django_api
     depends_on:
       - "db"
@@ -52,36 +60,78 @@ services:
       dockerfile: ./Docker-test/Frontend/Django/Dockerfile
     environment:
       DJANGO_ENVIRONMENT: ${DJANGO_ENVIRONMENT}
-      DJANGO_ALLOWED_HOSTS: ${DJANGO_FRONT_HOSTS}
-      DJANGO_ORIGIN: ${DJANGO_FRONT_ORIGIN}
+      DOMAIN: ${DOMAIN}
       DJANGO_DB_NAME: ${POSTGRES_DB}
       DJANGO_DB_USER: ${POSTGRES_USER}
       DJANGO_DB_PASSWORD: ${POSTGRES_PASSWORD}
       DJANGO_DB_HOST: db  # This is the hostname in docker-compose
       DJANGO_DB_PORT: 5432  # Default PostgreSQL port
     volumes:
-      - static:/app/monprojet/monapp/static
+      - ../Django_Frontend/:/app
     restart: unless-stopped
     networks:
-     - back_db_front
+     - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.django_frontend.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.django_frontend.entrypoints=websecure"
+      - "traefik.http.routers.django_frontend.tls=true"
+      - "traefik.http.routers.django_frontend.middlewares=redirect-to-https@file" # Note the "@file" to specify it's defined in a file
+      - "traefik.http.services.django_frontend.loadbalancer.server.url=http://django_frontend:80"
     hostname: django_frontend
     depends_on:
-     - "db"
-  
+     - "django_api"
+
   nginx:
     build: ./Frontend/nginx
     volumes:
       - static:/usr/share/nginx/html/static
     restart: unless-stopped
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.nginx_static.rule=Host(`${DOMAIN}`) && PathPrefix(`/static/`)"
+      - "traefik.http.routers.nginx_static.entrypoints=websecure"
+      - "traefik.http.routers.nginx_static.tls=true"
+      - "traefik.http.services.nginx_static.loadbalancer.server.port=80"
     hostname: nginx
     depends_on:
       - "django_frontend"
+  
+  traefik:
+    build:
+      context: ./traefik
+      dockerfile: Dockerfile
+      args:
+        - DOMAIN=${DOMAIN}
+    environment:
+      DOMAIN: ${DOMAIN}
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./traefik/traefik.yml:/traefik.yml"
+      - "./traefik/dynamic_conf.yml:/dynamic_conf.yml"
+      - "certs:/certs"
+    restart: unless-stopped
+    networks:
+      - proxy
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    depends_on:
+      - nginx
 
 volumes:
+  certs:
   db:
-  static:
+  pgadmin:
 
 networks:
-  back_db_front:
-  back_db_api:
-  back_nats_api:
+  proxy:

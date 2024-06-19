@@ -10,6 +10,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
+        ('api_staff', '__first__'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
@@ -83,83 +84,10 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('booking_date', models.DateTimeField(auto_now_add=True)),
                 ('price', models.FloatField()),
-                ('booking_type', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='api_common.bookingtype')),
-                ('client', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='api_common.client')),
-                ('flight', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='api_common.flight')),
+                ('client', models.ForeignKey(db_column='client', on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
-        ),
-        migrations.CreateModel(
-            name='ClientGroups',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('client', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='api_common.client')),
-                ('group', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='api_common.group')),
-            ],
-        ),
-        migrations.CreateModel(
-            name='ClientPermissions',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('client', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='api_common.client')),
-                ('permission', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='api_common.permission')),
-            ],
-        ),
-        migrations.AddField(
-            model_name='flight',
-            name='plane',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='api_common.plane'),
-        ),
-        migrations.CreateModel(
-            name='Staff',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('is_staff', models.BooleanField(default=False)),
-                ('is_superuser', models.BooleanField(default=False)),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-                ('staff_type', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='api_common.stafftype')),
-            ],
-        ),
-        migrations.CreateModel(
-            name='StaffGroups',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('group', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='api_common.group')),
-                ('staff', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='api_common.staff')),
-            ],
-        ),
-        migrations.CreateModel(
-            name='StaffPermissions',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('permission', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='api_common.permission')),
-                ('staff', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='api_common.staff')),
-            ],
-        ),
-        migrations.CreateModel(
-            name='Track',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('track_number', models.CharField(max_length=10)),
-                ('length', models.IntegerField()),
-                ('airport', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='api_common.airport')),
-            ],
-        ),
-        migrations.AddField(
-            model_name='flight',
-            name='track_destination',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='arrival_flights', to='api_common.track'),
-        ),
-        migrations.AddField(
-            model_name='flight',
-            name='track_origin',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='departure_flights', to='api_common.track'),
-        ),
-        migrations.CreateModel(
-            name='Working',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('flight', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='api_common.flight')),
-                ('staff', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='api_common.staff')),
-            ],
+            options={
+                'db_table': 'booking',
+            },
         ),
     ]

@@ -1,0 +1,11 @@
+http:
+  middlewares:
+    redirect-to-https:
+      redirectScheme:
+        scheme: https
+        permanent: true
+        
+tls:
+  certificates:
+    - certFile: "/certs/_wildcard.pem"
+      keyFile: "/certs/_wildcard.key.pem"

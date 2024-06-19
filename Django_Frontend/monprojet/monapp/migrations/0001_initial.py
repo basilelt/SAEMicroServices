@@ -30,6 +30,19 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
+            name='Client',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('username', models.CharField(max_length=150, unique=True)),
+                ('email', models.EmailField(max_length=254, unique=True)),
+                ('password', models.CharField(max_length=255)),
+                ('first_name', models.CharField(max_length=30)),
+                ('last_name', models.CharField(max_length=30)),
+                ('is_staff', models.BooleanField(default=False)),
+                ('is_superuser', models.BooleanField(default=False)),
+            ],
+        ),
+        migrations.CreateModel(
             name='Flight',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
@@ -59,6 +72,17 @@ class Migration(migrations.Migration):
                 ('model', models.CharField(max_length=100)),
                 ('second_class_capacity', models.IntegerField()),
                 ('first_class_capacity', models.IntegerField()),
+            ],
+        ),
+        migrations.CreateModel(
+            name='Staff',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('username', models.CharField(max_length=150, unique=True)),
+                ('email', models.EmailField(max_length=254, unique=True)),
+                ('password', models.CharField(max_length=255)),
+                ('is_staff', models.BooleanField(default=True)),
+                ('is_superuser', models.BooleanField(default=False)),
             ],
         ),
         migrations.CreateModel(
