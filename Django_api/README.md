@@ -1,5 +1,55 @@
-当然，以下是简化后的README.md，不包含请求参数：
+```markdown
+# Système de Réservation de Vols API
 
+Ce projet est un système de réservation de vols basé sur des microservices. Le système permet aux clients de consulter les vols, de faire des réservations et de gérer leurs réservations. Le personnel peut gérer les vols, les aéroports, les avions et consulter tous les enregistrements de réservation. Le service principal du projet est : `api_common`.
+
+## Table des Matières
+
+- [Aperçu de l'API](#aperçu-de-lapi)
+- [Installation](#installation)
+- [Exécution](#exécution)
+- [Points de Terminaison](#points-de-terminaison)
+  - [Gestion des Utilisateurs](#gestion-des-utilisateurs)
+  - [Gestion des Vols](#gestion-des-vols)
+  - [Gestion des Réservations](#gestion-des-réservations)
+  - [Gestion des Aéroports](#gestion-des-aéroports)
+  - [Gestion des Avions](#gestion-des-avions)
+  - [Tous les Enregistrements de Réservation](#tous-les-enregistrements-de-réservation)
+- [Modèles](#modèles)
+
+## Aperçu de l'API
+
+Cette API intègre toutes les fonctionnalités des clients et du personnel, garantissant que différents rôles d'utilisateurs peuvent accéder à leurs fonctionnalités respectives.
+
+## Installation
+
+1. Cloner le dépôt :
+   ```bash
+   git clone https://github.com/your_username/your_repository.git
+   cd your_repository
+   ```
+
+2. Créer et activer un environnement virtuel :
+   ```bash
+   python -m venv venv
+   source venv/bin/activate   # Linux
+   venv\Scripts\activate      # Windows
+   ```
+
+3. Installer les dépendances :
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. Exécuter les migrations de la base de données :
+   ```bash
+   python manage.py migrate
+   ```
+
+## Exécution
+
+Démarrer
+```
 ```markdown
 # 航班预订系统 API
 
@@ -58,16 +108,6 @@ python manage.py runserver
 ## 端点
 
 ### 用户管理
-
-- **注册**
-  - **端点**: `/api/register/`
-  - **方法**: POST
-  - **描述**: 注册新用户。
-
-- **登录**
-  - **端点**: `/api/login/`
-  - **方法**: POST
-  - **描述**: 认证用户并返回JWT令牌。
 
 - **获取用户列表（仅管理员）**
   - **端点**: `/api/users/`
@@ -198,14 +238,19 @@ python manage.py runserver
 
 以下是本项目使用的主要数据模型：
 
-- **Client**: 包含用户信息，标记是否为工作人员或超级用户。
-- **Staff**: 包含工作人员信息及其类型。
+- **StaffType**: 工作人员类型。
+- **Group**: 用户组信息。
+- **ClientGroups**: 客户和组的关系。
+- **StaffGroups**: 工作人员和组的关系。
+- **Permission**: 权限信息。
+- **ClientPermissions**: 客户和权限的关系。
+- **StaffPermissions**: 工作人员和权限的关系。
 - **Flight**: 航班信息，包括航班号、起飞和降落时间、飞机及航线。
 - **Booking**: 预订信息，包括预订日期、价格、预订类型、客户及航班。
 - **Airport**: 机场信息，包括名称和位置。
 - **Plane**: 飞机信息，包括型号、头等舱和经济舱容量。
+- **Track**: 跑道信息，包括跑道号、长度和所属机场。
 
 欢迎贡献代码，提交问题或建议！
 ```
 
-这个README文件简洁明了地介绍了项目的安装、运行方法以及API端点的概要信息，同时提供了数据模型的基本描述。
