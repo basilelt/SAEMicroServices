@@ -9,9 +9,31 @@ from .serializers import RegisterSerializer, LoginSerializer, UserSerializer, Fl
 from api_staff.models import Flight  # 确保只从api_staff.models导入Flight
 from api_common.models import Booking  # 从api_common.models导入Booking
 from rest_framework.permissions import IsAuthenticated  # 导入IsAuthenticated
+from api_common.models import Booking
+from api_common.serializers import BookingSerializer
 
 User = get_user_model()
 
+
+class UserBookingListView(generics.ListAPIView):
+    serializer_class = BookingSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Booking.objects.none()
+        return Booking.objects.filter(client=self.request.user)
+
+class UserBookingDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Booking.objects.all()
+    serializer_class = BookingSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_field = 'pk'
+
+    def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Booking.objects.none()
+        return Booking.objects.filter(client=self.request.user)
 
 class FlightListView(generics.ListAPIView):
     queryset = Flight.objects.all()

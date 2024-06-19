@@ -18,7 +18,7 @@ class StaffManager(BaseUserManager):
         return self.create_user(username, email, password, **extra_fields)
 
 class Staff(AbstractUser):
-    staff_type = models.ForeignKey('StaffType', on_delete=models.CASCADE, db_column='staff_type')
+    staff_type = models.ForeignKey('StaffType', on_delete=models.CASCADE)
 
     groups = models.ManyToManyField(
         Group,
@@ -59,9 +59,9 @@ class Flight(models.Model):
     flight_number = models.CharField(max_length=10, unique=True)
     departure = models.DateTimeField()
     arrival = models.DateTimeField()
-    plane = models.ForeignKey(Plane, on_delete=models.CASCADE, db_column='plane', default=1)
-    track_origin = models.ForeignKey('Track', related_name='track_origins', on_delete=models.CASCADE, db_column='track_origin', default=1)
-    track_destination = models.ForeignKey('Track', related_name='track_destinations', on_delete=models.CASCADE, db_column='track_destination', default=1)
+    plane = models.ForeignKey(Plane, on_delete=models.CASCADE)
+    track_origin = models.ForeignKey('Track', related_name='departure_flights', on_delete=models.CASCADE)
+    track_destination = models.ForeignKey('Track', related_name='arrival_flights', on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'flight'
@@ -69,7 +69,7 @@ class Flight(models.Model):
 class Track(models.Model):
     track_number = models.CharField(max_length=10)
     length = models.IntegerField()
-    airport = models.ForeignKey(Airport, on_delete=models.CASCADE, db_column='airport')
+    airport = models.ForeignKey(Airport, on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'track'
