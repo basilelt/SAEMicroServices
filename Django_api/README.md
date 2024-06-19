@@ -1,192 +1,180 @@
-# Microservices d'une Compagnie Aérienne
+# Airline Reservation System API
 
-## Api Client
+This project is a microservices-based airline reservation system. The system allows clients to view flights, make reservations, and manage their bookings. Staff members can manage flights, airports, planes, and view all bookings. The project is structured into three main services: `api_client`, `api_staff`, and `api_common`.
 
-### Introduction
-Le service Api Client gère les opérations liées aux clients, y compris l'authentification des clients et la gestion des réservations.
+## API Overview
 
-### Installation et Exécution
+### API Client
 
-#### Utilisation de Docker
+The `api_client` service handles all client-side operations, including user registration, login, viewing flights, and managing user-specific bookings.
 
-1. Construire l'image Docker :
+#### Endpoints
 
-    ```bash
-    docker build -t api-client:latest .
-    ```
+- **Register**: `/api/client/register/`
+  - Method: POST
+  - Description: Registers a new user.
 
-2. Exécuter le conteneur Docker :
+- **Login**: `/api/client/login/`
+  - Method: POST
+  - Description: Authenticates a user and returns JWT tokens.
 
-    ```bash
-    docker run -d -p 8000:8000 --name api-client api-client:latest
-    ```
+- **User List**: `/api/client/users/`
+  - Method: GET
+  - Description: Retrieves a list of all users. (Admin only)
 
-#### Utilisation de Docker Compose
+- **Update User**: `/api/client/update-user/<int:pk>/`
+  - Method: PUT
+  - Description: Updates user details.
 
-1. Démarrer le service avec Docker Compose :
+- **Delete User**: `/api/client/delete-user/<int:pk>/`
+  - Method: DELETE
+  - Description: Deletes a user.
 
-    ```bash
-    docker-compose up -d api-client
-    ```
+- **Flight List**: `/api/client/flights/`
+  - Method: GET
+  - Description: Retrieves a list of all available flights.
 
-### Points de terminaison de l'API
+- **User Booking List**: `/api/client/bookings/`
+  - Method: GET
+  - Description: Retrieves a list of all bookings made by the authenticated user.
 
-#### 1. Inscription des clients
+- **User Booking Detail**: `/api/client/bookings/<int:pk>/`
+  - Method: GET, PUT, DELETE
+  - Description: Retrieves, updates, or deletes a specific booking made by the authenticated user.
 
-- **URL**: `/api/register`
-- **Méthode**: `POST`
-- **Corps de la requête**:
-    ```json
-    {
-        "username": "exemple",
-        "password": "motdepasse123",
-        "email": "exemple@exemple.com"
-    }
-    ```
-- **Réponse**:
-    ```json
-    {
-        "message": "Utilisateur enregistré avec succès"
-    }
-    ```
+### API Staff
 
-#### 2. Connexion des clients
+The `api_staff` service handles all staff-side operations, including managing flights, airports, planes, and viewing all bookings.
 
-- **URL**: `/api/login`
-- **Méthode**: `POST`
-- **Corps de la requête**:
-    ```json
-    {
-        "username": "exemple",
-        "password": "motdepasse123"
-    }
-    ```
-- **Réponse**:
-    ```json
-    {
-        "token": "jeton_jwt_ici"
-    }
-    ```
+#### Endpoints
 
-#### 3. Réserver un vol
+- **Add Flight**: `/api/staff/add-flight/`
+  - Method: POST
+  - Description: Adds a new flight.
 
-- **URL**: `/api/book`
-- **Méthode**: `POST`
-- **En-tête de la requête**: 
-    ```http
-    Authorization: Bearer jeton_jwt_ici
-    ```
-- **Corps de la requête**:
-    ```json
-    {
-        "flight_id": "1234",
-        "passenger_info": {
-            "name": "John Doe",
-            "passport": "A12345678"
-        }
-    }
-    ```
-- **Réponse**:
-    ```json
-    {
-        "message": "Vol réservé avec succès",
-        "booking_id": "5678"
-    }
-    ```
+- **Delete Flight**: `/api/staff/delete-flight/<int:pk>/`
+  - Method: DELETE
+  - Description: Deletes a flight.
 
-## Api Staff
+- **Update Flight**: `/api/staff/update-flight/<int:pk>/`
+  - Method: PUT
+  - Description: Updates a flight's details.
 
-### Introduction
-Le service Api Staff gère les opérations liées au personnel, y compris l'authentification des employés et la gestion des informations de vol.
+- **Flight List**: `/api/staff/flights/`
+  - Method: GET
+  - Description: Retrieves a list of all flights.
 
-### Installation et Exécution
+- **Staff Login**: `/api/staff/login/`
+  - Method: POST
+  - Description: Authenticates a staff member and returns JWT tokens.
 
-#### Utilisation de Docker
+- **Airport List**: `/api/staff/airports/`
+  - Method: GET
+  - Description: Retrieves a list of all airports.
 
-1. Construire l'image Docker :
+- **Airport Detail**: `/api/staff/airports/<int:pk>/`
+  - Method: GET, PUT, DELETE
+  - Description: Retrieves, updates, or deletes a specific airport's details.
 
-    ```bash
-    docker build -t api-staff:latest .
-    ```
+- **Plane List**: `/api/staff/planes/`
+  - Method: GET
+  - Description: Retrieves a list of all planes.
 
-2. Exécuter le conteneur Docker :
+- **Plane Detail**: `/api/staff/planes/<int:pk>/`
+  - Method: GET, PUT, DELETE
+  - Description: Retrieves, updates, or deletes a specific plane's details.
 
-    ```bash
-    docker run -d -p 8001:8000 --name api-staff api-staff:latest
-    ```
+- **Booking List**: `/api/staff/bookings/`
+  - Method: GET
+  - Description: Retrieves a list of all bookings.
 
-#### Utilisation de Docker Compose
 
-1. Démarrer le service avec Docker Compose :
+# 航班预订系统 API
 
-    ```bash
-    docker-compose up -d api-staff
-    ```
+本项目是一个基于微服务的航班预订系统。系统允许客户查看航班、进行预订和管理他们的预订。工作人员可以管理航班、机场、飞机，并查看所有的预订记录。项目主要分为三个服务：`api_client`、`api_staff`和`api_common`。
 
-### Points de terminaison de l'API
+## API 概述
 
-#### 1. Connexion du personnel
+### API 客户端
 
-- **URL**: `/api/staff/login`
-- **Méthode**: `POST`
-- **Corps de la requête**:
-    ```json
-    {
-        "username": "personnel_exemple",
-        "password": "motdepasse123"
-    }
-    ```
-- **Réponse**:
-    ```json
-    {
-        "token": "jeton_jwt_ici"
-    }
-    ```
+`api_client`服务处理所有客户端操作，包括用户注册、登录、查看航班和管理用户特定的预订。
 
-#### 2. Ajouter un vol
+#### 端点
 
-- **URL**: `/api/staff/add-flight`
-- **Méthode**: `POST`
-- **En-tête de la requête**: 
-    ```http
-    Authorization: Bearer jeton_jwt_ici
-    ```
-- **Corps de la requête**:
-    ```json
-    {
-        "flight_number": "ABC123",
-        "departure": "2024-07-01T10:00:00Z",
-        "arrival": "2024-07-01T14:00:00Z",
-        "origin": "JFK",
-        "destination": "LAX"
-    }
-    ```
-- **Réponse**:
-    ```json
-    {
-        "message": "Vol ajouté avec succès",
-        "flight_id": "1234"
-    }
-    ```
+- **注册**: `/api/client/register/`
+  - 方法: POST
+  - 描述: 注册新用户。
 
-#### 3. Supprimer un vol
+- **登录**: `/api/client/login/`
+  - 方法: POST
+  - 描述: 认证用户并返回JWT令牌。
 
-- **URL**: `/api/staff/delete-flight`
-- **Méthode**: `DELETE`
-- **En-tête de la requête**: 
-    ```http
-    Authorization: Bearer jeton_jwt_ici
-    ```
-- **Corps de la requête**:
-    ```json
-    {
-        "flight_id": "1234"
-    }
-    ```
-- **Réponse**:
-    ```json
-    {
-        "message": "Vol supprimé avec succès"
-    }
-    ```
+- **用户列表**: `/api/client/users/`
+  - 方法: GET
+  - 描述: 获取所有用户的列表。（仅管理员）
 
+- **更新用户**: `/api/client/update-user/<int:pk>/`
+  - 方法: PUT
+  - 描述: 更新用户详细信息。
+
+- **删除用户**: `/api/client/delete-user/<int:pk>/`
+  - 方法: DELETE
+  - 描述: 删除用户。
+
+- **航班列表**: `/api/client/flights/`
+  - 方法: GET
+  - 描述: 获取所有可用航班的列表。
+
+- **用户预订列表**: `/api/client/bookings/`
+  - 方法: GET
+  - 描述: 获取当前认证用户的所有预订列表。
+
+- **用户预订详情**: `/api/client/bookings/<int:pk>/`
+  - 方法: GET, PUT, DELETE
+  - 描述: 获取、更新或删除当前认证用户的特定预订。
+
+### API 工作人员
+
+`api_staff`服务处理所有工作人员操作，包括管理航班、机场、飞机和查看所有预订记录。
+
+#### 端点
+
+- **添加航班**: `/api/staff/add-flight/`
+  - 方法: POST
+  - 描述: 添加新航班。
+
+- **删除航班**: `/api/staff/delete-flight/<int:pk>/`
+  - 方法: DELETE
+  - 描述: 删除航班。
+
+- **更新航班**: `/api/staff/update-flight/<int:pk>/`
+  - 方法: PUT
+  - 描述: 更新航班详细信息。
+
+- **航班列表**: `/api/staff/flights/`
+  - 方法: GET
+  - 描述: 获取所有航班的列表。
+
+- **登录**: `/api/staff/login/`
+  - 方法: POST
+  - 描述: 认证工作人员并返回JWT令牌。
+
+- **机场列表**: `/api/staff/airports/`
+  - 方法: GET
+  - 描述: 获取所有机场的列表。
+
+- **机场详情**: `/api/staff/airports/<int:pk>/`
+  - 方法: GET, PUT, DELETE
+  - 描述: 获取、更新或删除特定机场的详细信息。
+
+- **飞机列表**: `/api/staff/planes/`
+  - 方法: GET
+  - 描述: 获取所有飞机的列表。
+
+- **飞机详情**: `/api/staff/planes/<int:pk>/`
+  - 方法: GET, PUT, DELETE
+  - 描述: 获取、更新或删除特定飞机的详细信息。
+
+- **预订列表**: `/api/staff/bookings/`
+  - 方法: GET
+  - 描述: 获取所有预订的列表。
