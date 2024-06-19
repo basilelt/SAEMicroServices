@@ -46,8 +46,6 @@ else:
 
 INSTALLED_APPS = [
     'rest_framework',
-    'api_client',
-    'api_staff',
     'api_common',
     'drf_yasg',
     'djecrety',
@@ -164,7 +162,6 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-AUTH_USER_MODEL = 'api_client.Client'
 
 CORS_ORIGIN_WHITELIST = [
     "http://localhost:8010",
