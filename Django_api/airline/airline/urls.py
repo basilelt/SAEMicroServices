@@ -33,8 +33,6 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/client/', include('api_client.urls')),
-    path('api/staff/', include('api_staff.urls')),
     path('api/common/', include('api_common.urls')),
 ]
 
