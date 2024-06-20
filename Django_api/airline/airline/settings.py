@@ -47,6 +47,7 @@ else:
 
 INSTALLED_APPS = [
     'rest_framework',
+    'rest_framework.authtoken',
     'api_common',
     'drf_yasg',
     'django.contrib.admin',
