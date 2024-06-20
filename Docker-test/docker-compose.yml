@@ -109,6 +109,7 @@ services:
      - "django_api"
   
   traefik:
+    image: traefik:3.0
     build:
       context: ./traefik
       dockerfile: Dockerfile
