@@ -12,6 +12,8 @@ WORKDIR /app/airline
 ENV VIRTUAL_ENV /env
 ENV PATH /env/bin:$PATH
 
-RUN python manage.py djecrety -s
+COPY ./Docker-test/API/entrypoint.sh /entrypoint.sh
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+ENTRYPOINT ["/entrypoint.sh"]
+
+EXPOSE 80
