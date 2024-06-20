@@ -27,33 +27,6 @@ class StaffPermissions(models.Model):
     staff = models.ForeignKey(User, on_delete=models.CASCADE)
     permission = models.ForeignKey(Permission, on_delete=models.CASCADE)
 
-class Flight(models.Model):
-    flight_number = models.CharField(max_length=10, unique=True)
-    departure = models.DateTimeField()
-    arrival = models.DateTimeField()
-    plane = models.ForeignKey('Plane', on_delete=models.CASCADE)
-    track_origin = models.ForeignKey('Track', related_name='departure_flights', on_delete=models.CASCADE)
-    track_destination = models.ForeignKey('Track', related_name='arrival_flights', on_delete=models.CASCADE)
-
-class Plane(models.Model):
-    model = models.CharField(max_length=100)
-    second_class_capacity = models.IntegerField()
-    first_class_capacity = models.IntegerField()
-
-class Booking(models.Model):
-    booking_date = models.DateTimeField(auto_now_add=True)
-    price = models.FloatField()
-    booking_type = models.ForeignKey('BookingType', on_delete=models.CASCADE)
-    client = models.ForeignKey(User, on_delete=models.CASCADE)
-    flight = models.ForeignKey(Flight, on_delete=models.CASCADE)
-
-class BookingType(models.Model):
-    type = models.CharField(max_length=30)
-
-class Working(models.Model):
-    staff = models.ForeignKey(User, on_delete=models.CASCADE)
-    flight = models.ForeignKey(Flight, on_delete=models.CASCADE)
-
 class Airport(models.Model):
     name = models.CharField(max_length=100)
     location = models.CharField(max_length=100)
@@ -62,3 +35,64 @@ class Track(models.Model):
     track_number = models.CharField(max_length=10)
     length = models.IntegerField()
     airport = models.ForeignKey(Airport, on_delete=models.CASCADE)
+
+class Plane(models.Model):
+    model = models.CharField(max_length=100)
+    second_class_capacity = models.IntegerField()
+    first_class_capacity = models.IntegerField()
+
+class Flight(models.Model):
+    flight_number = models.CharField(max_length=10, unique=True)
+    departure = models.DateTimeField()
+    arrival = models.DateTimeField()
+    plane = models.ForeignKey(Plane, on_delete=models.CASCADE)
+    track_origin = models.ForeignKey(Track, related_name='departure_flights', on_delete=models.CASCADE)
+    track_destination = models.ForeignKey(Track, related_name='arrival_flights', on_delete=models.CASCADE)
+
+class BookingType(models.Model):
+    type = models.CharField(max_length=30)
+
+class Booking(models.Model):
+    booking_date = models.DateTimeField(auto_now_add=True)
+    price = models.FloatField()
+    booking_type = models.ForeignKey(BookingType, on_delete=models.CASCADE)
+    client = models.ForeignKey(User, on_delete=models.CASCADE)
+    flight = models.ForeignKey(Flight, on_delete=models.CASCADE)
+
+class Working(models.Model):
+    staff = models.ForeignKey(User, on_delete=models.CASCADE)
+    flight = models.ForeignKey(Flight, on_delete=models.CASCADE)
+
+# 新增模型
+class Reservation(models.Model):
+    client = models.ForeignKey(User, on_delete=models.CASCADE)
+    flight = models.ForeignKey(Flight, on_delete=models.CASCADE)
+    status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('confirmed', 'Confirmed'), ('cancelled', 'Cancelled')])
+    reserved_at = models.DateTimeField(auto_now_add=True)
+    number_of_tickets = models.IntegerField()
+
+class Transaction(models.Model):
+    client = models.ForeignKey(User, on_delete=models.CASCADE)
+    amount = models.FloatField()
+    transaction_date = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('completed', 'Completed'), ('failed', 'Failed')])
+    reservation = models.ForeignKey(Reservation, on_delete=models.CASCADE, null=True, blank=True)
+
+class CancellationRequest(models.Model):
+    client = models.ForeignKey(User, on_delete=models.CASCADE)
+    flight = models.ForeignKey(Flight, on_delete=models.CASCADE)
+    request_date = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('approved', 'Approved'), ('rejected', 'Rejected')])
+    reason = models.TextField(null=True, blank=True)
+
+class PaymentGateway(models.Model):
+    transaction = models.ForeignKey(Transaction, on_delete=models.CASCADE)
+    gateway_response = models.TextField()
+    status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('approved', 'Approved'), ('rejected', 'Rejected')])
+    processed_at = models.DateTimeField(auto_now_add=True)
+
+class FlightCrew(models.Model):
+    staff = models.ForeignKey(User, on_delete=models.CASCADE)
+    flight = models.ForeignKey(Flight, on_delete=models.CASCADE)
+    role = models.CharField(max_length=100)  # 例如 Pilot, Attendant 等
+    assigned_at = models.DateTimeField(auto_now_add=True)
