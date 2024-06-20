@@ -63,20 +63,13 @@ class Working(models.Model):
     staff = models.ForeignKey(User, on_delete=models.CASCADE)
     flight = models.ForeignKey(Flight, on_delete=models.CASCADE)
 
-# 新增模型
-class Reservation(models.Model):
-    client = models.ForeignKey(User, on_delete=models.CASCADE)
-    flight = models.ForeignKey(Flight, on_delete=models.CASCADE)
-    status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('confirmed', 'Confirmed'), ('cancelled', 'Cancelled')])
-    reserved_at = models.DateTimeField(auto_now_add=True)
-    number_of_tickets = models.IntegerField()
-
+#new
 class Transaction(models.Model):
     client = models.ForeignKey(User, on_delete=models.CASCADE)
     amount = models.FloatField()
     transaction_date = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('completed', 'Completed'), ('failed', 'Failed')])
-    reservation = models.ForeignKey(Reservation, on_delete=models.CASCADE, null=True, blank=True)
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, null=True, blank=True)
 
 class CancellationRequest(models.Model):
     client = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -90,9 +83,3 @@ class PaymentGateway(models.Model):
     gateway_response = models.TextField()
     status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('approved', 'Approved'), ('rejected', 'Rejected')])
     processed_at = models.DateTimeField(auto_now_add=True)
-
-class FlightCrew(models.Model):
-    staff = models.ForeignKey(User, on_delete=models.CASCADE)
-    flight = models.ForeignKey(Flight, on_delete=models.CASCADE)
-    role = models.CharField(max_length=100)  # 例如 Pilot, Attendant 等
-    assigned_at = models.DateTimeField(auto_now_add=True)
