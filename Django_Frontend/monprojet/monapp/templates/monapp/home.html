@@ -1,21 +1,6 @@
-<!-- home.html -->
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Home Page</title>
-    <!-- Vous pouvez ajouter ici vos propres liens CSS, scripts JavaScript, etc. -->
-</head>
-<body>
+{% extends 'monapp/base.html' %}
+
+{% block content %}
     <h1>Welcome to the Home Page!</h1>
     <!-- Ajoutez le reste de votre contenu ici -->
-    <ul>
-        <li><a href="{% url 'create-client' %}">Create Client</a></li>
-        <li><a href="{% url 'create-staff' %}">Create Staff</a></li>
-        <li><a href="{% url 'create-staff-type' %}">Create Staff Type</a></li>
-        <li><a href="{% url 'view_clients' %}">View Clients</a></li>
-        <li><a href="{% url 'view_staff' %}">View Staff</a></li>
-        <li><a href="{% url 'view_staff_types' %}">View Staff Types</a></li>
-        <!-- Ajoutez d'autres liens ici selon vos besoins -->
-    </ul>
-</body>
-</html>
+{% endblock %}

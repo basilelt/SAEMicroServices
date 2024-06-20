@@ -1,15 +1,27 @@
-<!-- base.html -->
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
-    <!-- Metadonnées, CSS, JavaScript, etc. -->
+    <title>Mon Application</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'monapp/styles.css' %}">
 </head>
 <body>
-    <header>
-        <!-- Ajoutez votre bouton de retour à la page d'accueil ici -->
-        <a href="{% url 'home' %}">Home</a>
+    <header class="header">
+        <nav>
+            <button class="menu-button">Menu</button>
+            <div class="menu-content">
+                <a href="{% url 'home' %}">Home</a>
+                <a href="{% url 'create-client' %}">Create Client</a>
+                <a href="{% url 'create-staff' %}">Create Staff</a>
+                <a href="{% url 'create-staff-type' %}">Create Staff Type</a>
+                <a href="{% url 'view_clients' %}">View Clients</a>
+                <a href="{% url 'view_staff' %}">View Staff</a>
+                <a href="{% url 'view_staff_types' %}">View Staff Types</a>
+                <!-- Ajoutez d'autres liens ici selon vos besoins -->
+            </div>
+        </nav>
+        <h1>Mon Application</h1>
     </header>
-
     <main>
         {% block content %}
         <!-- Le contenu spécifique à chaque page sera inséré ici -->
