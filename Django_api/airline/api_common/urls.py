@@ -1,7 +1,7 @@
 #api_common/urls.py
 from django.urls import path
 from .views import (
-    UserListView, UserDetailView, FlightListView,
+    RegisterView, LoginView, UserListView, UserDetailView, FlightListView,
     FlightDetailView, BookingListView, BookingDetailView, AirportListView,
     AirportDetailView, PlaneListView, PlaneDetailView, AllBookingsListView,
     AddFlightView, UpdateFlightView, DeleteFlightView, AddAirportView,
@@ -9,6 +9,8 @@ from .views import (
 )
 
 urlpatterns = [
+    path('register/', RegisterView.as_view(), name='register'),
+    path('login/', LoginView.as_view(), name='login'),
     path('users/', UserListView.as_view(), name='user-list'),
     path('users/<int:pk>/', UserDetailView.as_view(), name='user-detail'),
     path('flights/', FlightListView.as_view(), name='flight-list'),

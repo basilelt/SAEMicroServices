@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 import os
-from django.core.management.utils import get_random_secret_key
 
 # Determine the running environment
 ENVIRONMENT = os.getenv('DJANGO_ENVIRONMENT', 'development')
@@ -28,7 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = get_random_secret_key()
+SECRET_KEY = 'django-insecure-99(zxsdor&rf!8))*ibklrk5+mf2a8#9e77a5sjpt6$_1_w)u@'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 if ENVIRONMENT == 'development' or ENVIRONMENT == 'test':
@@ -37,9 +36,9 @@ else:
     DEBUG = False
     
 if ENVIRONMENT == 'development' or ENVIRONMENT == 'test':
-    ALLOWED_HOSTS = ['*']
+    ALLOWED_HOSTS = []
 else:
-    ALLOWED_HOSTS = "api" + os.getenv('DOMAIN')
+    ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS').split(',')
 
 
 
@@ -49,6 +48,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'api_common',
     'drf_yasg',
+    'djecrety',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -68,7 +68,7 @@ MIDDLEWARE = [
 ]
 
 if ENVIRONMENT == 'production':
-    CSRF_TRUSTED_ORIGINS = "https://api." + os.getenv('DOMAIN')
+    CSRF_TRUSTED_ORIGINS = os.getenv('DJANGO_ORIGIN').split(',')
 
 ROOT_URLCONF = 'airline.urls'
 
@@ -97,7 +97,15 @@ else:
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-if ENVIRONMENT == 'test' or ENVIRONMENT == 'production':
+if ENVIRONMENT == 'development':
+    # Use SQLite for development
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+else:
     # Use PostgreSQL for production
     DATABASES = {
         'default': {
@@ -109,15 +117,9 @@ if ENVIRONMENT == 'test' or ENVIRONMENT == 'production':
             'PORT': '5432',
         }
     }
-else:
-    # Use SQLite for development
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
-    
+
+
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators

@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 import os
 import mimetypes
-from django.core.management.utils import get_random_secret_key
     
 mimetypes.add_type("text/css", ".css", True)
 mimetypes.add_type("image/jpeg", ".jpeg", True)
@@ -36,7 +35,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # Secret key is set automatically in production by djecrety
-SECRET_KEY = get_random_secret_key()
+SECRET_KEY = 'django-insecure-ru2*_zb24rz0rxy)h+ac7&!=*+jck1$15%2tkov#g*c(u&z@dd'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 if ENVIRONMENT == 'development' or ENVIRONMENT == 'test':
@@ -45,9 +44,9 @@ else:
     DEBUG = False
     
 if ENVIRONMENT == 'development' or ENVIRONMENT == 'test':
-    ALLOWED_HOSTS = ['*']
+    ALLOWED_HOSTS = []
 else:
-    ALLOWED_HOSTS = os.getenv('DOMAIN')
+    ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS').split(',')
 
 # Application definition
 
@@ -59,6 +58,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'monapp',
+    'djecrety',
 ]
 
 MIDDLEWARE = [
@@ -72,7 +72,7 @@ MIDDLEWARE = [
 ]
 
 if ENVIRONMENT == 'production':
-    CSRF_TRUSTED_ORIGINS = "https://" + os.getenv('DOMAIN')
+    CSRF_TRUSTED_ORIGINS = os.getenv('DJANGO_ORIGIN').split(',')
 
 ROOT_URLCONF = 'monprojet.urls'
 
@@ -100,7 +100,15 @@ else:
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-if ENVIRONMENT == 'test' or ENVIRONMENT == 'production':
+if ENVIRONMENT == 'development':
+    # Use SQLite for development
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+else:
     # Use PostgreSQL for production
     DATABASES = {
         'default': {
@@ -110,14 +118,6 @@ if ENVIRONMENT == 'test' or ENVIRONMENT == 'production':
             'PASSWORD': os.getenv('DJANGO_DB_PASSWORD'),
             'HOST': 'db',
             'PORT': '5432',
-        }
-    }
-else:
-    # Use SQLite for development
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
 

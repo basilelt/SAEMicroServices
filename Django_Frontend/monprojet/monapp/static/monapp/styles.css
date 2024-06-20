@@ -1,0 +1,59 @@
+body {
+    font-family: Arial, sans-serif;
+    background: #fff;
+    color: #000;
+    margin: 0;
+    padding: 0;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #000;
+    padding: 10px 20px;
+    color: white;
+    position: relative;
+}
+
+.menu-button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 16px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+}
+
+.menu-button:hover, .menu-button:focus {
+    background-color: #3e8e41;
+}
+
+.menu-content {
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.menu-content a {
+    display: none; /* Add this line to hide the menu by default */
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.menu-button:hover .menu-content, .menu-button:focus .menu-content {
+    display: block;
+}
+
+h1 {
+    color: white;
+}
+
+main {
+    color: black;
+}
