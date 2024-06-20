@@ -12,8 +12,6 @@ WORKDIR /app/airline
 ENV VIRTUAL_ENV /env
 ENV PATH /env/bin:$PATH
 
-COPY ./Docker-test/API/entrypoint.sh /entrypoint.sh
+RUN python manage.py djecrety -s
 
-ENTRYPOINT ["/entrypoint.sh"]
-
-EXPOSE 80
+CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "airline.asgi:application"]

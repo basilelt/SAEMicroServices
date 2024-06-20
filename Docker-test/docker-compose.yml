@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:16.3
+    build: ./DB
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -8,7 +8,11 @@ services:
     volumes:
       - db:/var/lib/postgresql/data
     networks:
-      - proxy
+      - back_db_front
+      - back_db_api
+      - back_db_admin
+    ports:
+      - "5432:5432"
     hostname: db
 
   pgadmin:
@@ -24,14 +28,9 @@ services:
     volumes:
       - pgadmin:/pgadmin4
     networks:
-      - proxy
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.pgadmin.rule=Host(`pgadmin.${DOMAIN}`)"
-      - "traefik.http.routers.pgadmin.entrypoints=websecure"
-      - "traefik.http.routers.pgadmin.tls=true"
-      - "traefik.http.routers.pgadmin.middlewares=redirect-to-https@file" # Note the "@file" to specify it's defined in a file
-      - "traefik.http.services.pgadmin.loadbalancer.server.url=http://pgadmin:80"
+      - back_db_admin
+    ports:
+      - "5050:80"
     hostname: pgadmin
     depends_on:
       - "db"
@@ -46,7 +45,7 @@ services:
     command: "-c /etc/nats/nats.conf"
     restart: unless-stopped
     networks:
-      - proxy
+      - back_nats_api
     ports:
       - "4222:4222"
     hostname: nats
@@ -57,6 +56,8 @@ services:
       dockerfile: ./Docker-test/API/Dockerfile
     environment:
       DJANGO_ENVIRONMENT: ${DJANGO_ENVIRONMENT}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_API_HOSTS}
+      DJANGO_ORIGIN: ${DJANGO_API_ORIGIN}
       DJANGO_DB_NAME: ${POSTGRES_DB}
       DJANGO_DB_USER: ${POSTGRES_USER}
       DJANGO_DB_PASSWORD: ${POSTGRES_PASSWORD}
@@ -66,14 +67,10 @@ services:
       - ../Django_api/:/app
     restart: unless-stopped
     networks:
-      - proxy
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.django_api.rule=Host(`api.${DOMAIN}`)"
-      - "traefik.http.routers.django_api.entrypoints=websecure"
-      - "traefik.http.routers.django_api.tls=true"
-      - "traefik.http.routers.django_api.middlewares=redirect-to-https@file" # Note the "@file" to specify it's defined in a file
-      - "traefik.http.services.django_api.loadbalancer.server.url=http://django_api:80"
+      - back_db_api
+      - back_nats_api
+    ports:
+      - "8020:8000"
     hostname: django_api
     depends_on:
       - "db"
@@ -84,6 +81,8 @@ services:
       dockerfile: ./Docker-test/Frontend/Django/Dockerfile
     environment:
       DJANGO_ENVIRONMENT: ${DJANGO_ENVIRONMENT}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_FRONT_HOSTS}
+      DJANGO_ORIGIN: ${DJANGO_FRONT_ORIGIN}
       DJANGO_DB_NAME: ${POSTGRES_DB}
       DJANGO_DB_USER: ${POSTGRES_USER}
       DJANGO_DB_PASSWORD: ${POSTGRES_PASSWORD}
@@ -93,50 +92,19 @@ services:
       - ../Django_Frontend/:/app
     restart: unless-stopped
     networks:
-     - proxy
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.django_frontend.rule=Host(`${DOMAIN}`)"
-      - "traefik.http.routers.django_frontend.entrypoints=websecure"
-      - "traefik.http.routers.django_frontend.tls=true"
-      - "traefik.http.routers.django_frontend.middlewares=redirect-to-https@file" # Note the "@file" to specify it's defined in a file
-      - "traefik.http.services.django_frontend.loadbalancer.server.url=http://django_frontend:80"
+     - back_db_front
+    ports:
+      - "8010:8000"
     hostname: django_frontend
     depends_on:
      - "db"
-     - "django_api"
-  
-  traefik:
-    build:
-      context: ./traefik
-      dockerfile: Dockerfile
-      args:
-        - DOMAIN=${DOMAIN}
-    environment:
-      DOMAIN: ${DOMAIN}
-    command:
-      - "--api.insecure=true"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-    ports:
-      - "80:80"
-      - "443:443"
-      - "8080:8080"
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
-      - "./traefik/traefik.yml:/traefik.yml"
-      - "./traefik/dynamic_conf.yml:/dynamic_conf.yml"
-      - "certs:/certs"
-    networks:
-      - proxy
-    restart: unless-stopped
 
 volumes:
-  certs:
   db:
   pgadmin:
 
 networks:
-  proxy:
+  back_db_front:
+  back_db_api:
+  back_nats_api:
+  back_db_admin:
