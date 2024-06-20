@@ -7,15 +7,6 @@ from django.contrib.auth.models import User
 from .models import Flight, Booking, Airport, Plane
 from .serializers import UserSerializer, FlightSerializer, BookingSerializer, AirportSerializer, PlaneSerializer
 
-class RegisterView(generics.CreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-
-class LoginView(APIView):
-    def post(self, request):
-        # Implement your authentication logic here
-        return Response({"message": "Login successful"}, status=status.HTTP_200_OK)
-
 class UserListView(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -43,7 +34,7 @@ class BookingListView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        return Booking.objects.filter(client__user=user)
+        return Booking.objects.filter(client=user)
 
 class BookingDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Booking.objects.all()
@@ -54,7 +45,7 @@ class BookingDetailView(generics.RetrieveUpdateDestroyAPIView):
         if getattr(self, 'swagger_fake_view', False):
             return Booking.objects.none()
         user = self.request.user
-        return Booking.objects.filter(client__user=user, pk=self.kwargs.get('pk'))
+        return Booking.objects.filter(client=user, pk=self.kwargs.get('pk'))
 
 class AirportListView(generics.ListCreateAPIView):
     queryset = Airport.objects.all()

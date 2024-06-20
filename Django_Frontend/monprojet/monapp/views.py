@@ -1,39 +1,64 @@
-from django.http import HttpRequest
 import requests
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.models import User
-from .forms import ClientForm, StaffForm, StaffTypeForm, RegistrationForm
+from .forms import ClientForm, StaffForm, StaffTypeForm
 from .models import Staff, Client, StaffType
-from django.http import HttpRequest
 
 # Create your views here.
 
-def get_api_url(request: HttpRequest) -> str:
-    host = request.get_host()
-    protocol = 'https://' if request.is_secure() else 'http://'
-    api_url = f'{protocol}api.{host}/'
-    return api_url
+api_url = 'http://localhost:8020/api/'
 
 def client_create_view(request):
-    form = ClientForm(request.POST or None)
-    if form.is_valid():
-        form.save()
-        return redirect('home')
+    if request.method == 'POST':
+        form = ClientForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+            user = User.objects.create_user(
+                username=data['username'],
+                email=data['email'],
+                password=data['password'],
+                first_name=data['first_name'],
+                last_name=data['last_name'],
+                is_staff=data['is_staff'],
+                is_superuser=data['is_superuser']
+            )
+            user.save()
+            messages.success(request, 'Client created successfully')
+            return redirect('success')
+    else:
+        form = ClientForm()
     return render(request, 'monapp/create_client.html', {'form': form})
 
 def staff_create_view(request):
-    form = StaffForm(request.POST or None)
-    if form.is_valid():
-        form.save()
-        return redirect('home')
-    return render(request, 'monapp/create_staff.html', {'form': form})
+        if request.method == 'POST':
+            form = StaffForm(request.POST)
+            if form.is_valid():
+                data = form.cleaned_data
+                user = User.objects.create_user(
+                    username=data['username'],
+                    email=data['email'],
+                    password=data['password'],
+                    is_staff=data['is_staff'],
+                    is_superuser=data['is_superuser']
+                )
+                user.staffprofile.staff_type = data['staff_type']
+                user.staffprofile.save()
+                user.save()
+                messages.success(request, 'Staff created successfully')
+                return redirect('success')
+        else:
+            form = StaffForm()
+        return render(request, 'monapp/create_staff.html', {'form': form})
 
-def staff_type_create_view(request):
-    form = StaffTypeForm(request.POST or None)
-    if form.is_valid():
-        form.save()
-        return redirect('home')
+def create_staff_type(request):
+    if request.method == 'POST':
+        form = StaffTypeForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('home')
+    else:
+        form = StaffTypeForm()
     return render(request, 'monapp/create_staff_type.html', {'form': form})
 
 def view_staff(request):
@@ -53,32 +78,3 @@ def success(request):
 
 def home(request):
     return render(request, 'monapp/home.html')
-
-def register(request):
-    if request.method == 'POST':
-        form = RegistrationForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('login')
-    else:
-        form = RegistrationForm()
-    return render(request, 'monapp/register.html', {'form': form})
-
-def login(request):
-    if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
-
-        response = requests.post('http://your-api-url/login/', data={
-            'username': username,
-            'password': password,
-        })
-
-        if response.status_code == 200:
-            # Login successful, redirect to home page
-            return redirect('home')
-        else:
-            # Login failed, show error message
-            messages.error(request, 'Login failed. Please check your username and password.')
-    
-    return render(request, 'monapp/login.html')
