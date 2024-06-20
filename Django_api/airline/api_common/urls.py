@@ -6,9 +6,8 @@ from .views import (
     AirportDetailView, PlaneListView, PlaneDetailView, AllBookingsListView,
     AddFlightView, UpdateFlightView, DeleteFlightView, AddAirportView,
     UpdateAirportView, DeleteAirportView, AddPlaneView, UpdatePlaneView, DeletePlaneView,
-    ReservationListView, ReservationDetailView, TransactionListView, TransactionDetailView,
-    CancellationRequestListView, CancellationRequestDetailView, PaymentGatewayListView, PaymentGatewayDetailView,
-    FlightCrewListView, FlightCrewDetailView
+    TransactionListView, TransactionDetailView,
+    CancellationRequestListView, CancellationRequestDetailView, PaymentGatewayListView, PaymentGatewayDetailView
 )
 
 urlpatterns = [
@@ -34,14 +33,10 @@ urlpatterns = [
     path('planes/delete/<int:pk>/', DeletePlaneView.as_view(), name='delete-plane'),
 
     # new
-    path('reservations/', ReservationListView.as_view(), name='reservation-list'),
-    path('reservations/<int:pk>/', ReservationDetailView.as_view(), name='reservation-detail'),
     path('transactions/', TransactionListView.as_view(), name='transaction-list'),
     path('transactions/<int:pk>/', TransactionDetailView.as_view(), name='transaction-detail'),
     path('cancellation-requests/', CancellationRequestListView.as_view(), name='cancellation-request-list'),
     path('cancellation-requests/<int:pk>/', CancellationRequestDetailView.as_view(), name='cancellation-request-detail'),
     path('payment-gateways/', PaymentGatewayListView.as_view(), name='payment-gateway-list'),
     path('payment-gateways/<int:pk>/', PaymentGatewayDetailView.as_view(), name='payment-gateway-detail'),
-    path('flight-crews/', FlightCrewListView.as_view(), name='flight-crew-list'),
-    path('flight-crews/<int:pk>/', FlightCrewDetailView.as_view(), name='flight-crew-detail'),
 ]

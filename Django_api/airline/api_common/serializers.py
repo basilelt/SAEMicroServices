@@ -1,7 +1,7 @@
 #api_common/serializers.py
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Flight, Booking, Airport, Plane, Reservation, Transaction, CancellationRequest, PaymentGateway, FlightCrew
+from .models import Flight, Booking, Airport, Plane, Transaction, CancellationRequest, PaymentGateway
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -28,11 +28,6 @@ class PlaneSerializer(serializers.ModelSerializer):
         model = Plane
         fields = '__all__'
 
-class ReservationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Reservation
-        fields = '__all__'
-
 class TransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
@@ -46,9 +41,4 @@ class CancellationRequestSerializer(serializers.ModelSerializer):
 class PaymentGatewaySerializer(serializers.ModelSerializer):
     class Meta:
         model = PaymentGateway
-        fields = '__all__'
-
-class FlightCrewSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = FlightCrew
         fields = '__all__'

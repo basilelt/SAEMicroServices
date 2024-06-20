@@ -4,8 +4,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.contrib.auth.models import User
-from .models import Flight, Booking, Airport, Plane, Reservation, Transaction, CancellationRequest, PaymentGateway, FlightCrew
-from .serializers import UserSerializer, FlightSerializer, BookingSerializer, AirportSerializer, PlaneSerializer, ReservationSerializer, TransactionSerializer, CancellationRequestSerializer, PaymentGatewaySerializer, FlightCrewSerializer
+from .models import Flight, Booking, Airport, Plane, Transaction, CancellationRequest, PaymentGateway
+from .serializers import UserSerializer, FlightSerializer, BookingSerializer, AirportSerializer, PlaneSerializer, TransactionSerializer, CancellationRequestSerializer, PaymentGatewaySerializer
 
 class UserListView(generics.ListAPIView):
     queryset = User.objects.all()
@@ -118,26 +118,6 @@ class DeletePlaneView(generics.DestroyAPIView):
     permission_classes = [IsAdminUser]
 
 # new
-class ReservationListView(generics.ListCreateAPIView):
-    queryset = Reservation.objects.all()
-    serializer_class = ReservationSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        user = self.request.user
-        return Reservation.objects.filter(client=user)
-
-class ReservationDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Reservation.objects.all()
-    serializer_class = ReservationSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        if getattr(self, 'swagger_fake_view', False):
-            return Reservation.objects.none()
-        user = self.request.user
-        return Reservation.objects.filter(client=user, pk=self.kwargs.get('pk'))
-
 class TransactionListView(generics.ListCreateAPIView):
     queryset = Transaction.objects.all()
     serializer_class = TransactionSerializer
@@ -197,13 +177,3 @@ class PaymentGatewayDetailView(generics.RetrieveUpdateDestroyAPIView):
             return PaymentGateway.objects.none()
         user = self.request.user
         return PaymentGateway.objects.filter(transaction__client=user, pk=self.kwargs.get('pk'))
-
-class FlightCrewListView(generics.ListCreateAPIView):
-    queryset = FlightCrew.objects.all()
-    serializer_class = FlightCrewSerializer
-    permission_classes = [IsAdminUser]
-
-class FlightCrewDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = FlightCrew.objects.all()
-    serializer_class = FlightCrewSerializer
-    permission_classes = [IsAdminUser]
