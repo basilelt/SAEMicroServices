@@ -1,16 +1,18 @@
 #api_common/urls.py
 from django.urls import path
+from rest_framework.authtoken.views import obtain_auth_token
 from .views import (
     UserListView, UserDetailView, FlightListView,
     FlightDetailView, BookingListView, BookingDetailView, AirportListView,
     AirportDetailView, PlaneListView, PlaneDetailView, AllBookingsListView,
     AddFlightView, UpdateFlightView, DeleteFlightView, AddAirportView,
     UpdateAirportView, DeleteAirportView, AddPlaneView, UpdatePlaneView, DeletePlaneView,
-    TransactionListView, TransactionDetailView,
+    TransactionListView, TransactionDetailView, TrackCreateView,
     CancellationRequestListView, CancellationRequestDetailView, PaymentGatewayListView, PaymentGatewayDetailView
 )
 
 urlpatterns = [
+    path('api-token-auth/', obtain_auth_token, name='api_token_auth'),
     path('users/', UserListView.as_view(), name='user-list'),
     path('users/<int:pk>/', UserDetailView.as_view(), name='user-detail'),
     path('flights/', FlightListView.as_view(), name='flight-list'),
@@ -33,6 +35,7 @@ urlpatterns = [
     path('planes/delete/<int:pk>/', DeletePlaneView.as_view(), name='delete-plane'),
 
     # new
+    path('tracks/add/', TrackCreateView.as_view(), name='add-track'),
     path('transactions/', TransactionListView.as_view(), name='transaction-list'),
     path('transactions/<int:pk>/', TransactionDetailView.as_view(), name='transaction-detail'),
     path('cancellation-requests/', CancellationRequestListView.as_view(), name='cancellation-request-list'),

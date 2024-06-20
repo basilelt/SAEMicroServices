@@ -1,7 +1,7 @@
 #api_common/serializers.py
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Flight, Booking, Airport, Plane, Transaction, CancellationRequest, PaymentGateway
+from .models import Flight, Booking, Airport, Plane, Transaction, CancellationRequest, PaymentGateway, Track
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -41,4 +41,9 @@ class CancellationRequestSerializer(serializers.ModelSerializer):
 class PaymentGatewaySerializer(serializers.ModelSerializer):
     class Meta:
         model = PaymentGateway
+        fields = '__all__'
+
+class TrackSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Track
         fields = '__all__'
