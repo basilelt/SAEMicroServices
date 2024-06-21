@@ -47,7 +47,7 @@ else:
 if ENVIRONMENT == 'development' or ENVIRONMENT == 'test':
     ALLOWED_HOSTS = ['*']
 else:
-    ALLOWED_HOSTS = "api" + os.getenv('DOMAIN')
+    ALLOWED_HOSTS = [os.getenv('DOMAIN')]
 
 # Application definition
 
@@ -71,8 +71,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-if ENVIRONMENT == 'production':
-    CSRF_TRUSTED_ORIGINS = os.getenv('DJANGO_ORIGIN').split(',')
+if ENVIRONMENT != 'development':
+    CSRF_TRUSTED_ORIGINS = ["https://" + os.getenv('DOMAIN')]
 
 ROOT_URLCONF = 'monprojet.urls'
 
