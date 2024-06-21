@@ -31,6 +31,7 @@ services:
       context: ../
       dockerfile: ./Docker-test/API/Dockerfile
     environment:
+      DOMAIN: ${DOMAIN}
       DJANGO_ENVIRONMENT: ${DJANGO_ENVIRONMENT}
       DJANGO_DB_NAME: ${POSTGRES_DB}
       DJANGO_DB_USER: ${POSTGRES_USER}
@@ -60,6 +61,7 @@ services:
       context: ../
       dockerfile: ./Docker-test/Frontend/Django/Dockerfile
     environment:
+      DOMAIN: ${DOMAIN}
       DJANGO_ENVIRONMENT: ${DJANGO_ENVIRONMENT}
       DJANGO_DB_NAME: ${POSTGRES_DB}
       DJANGO_DB_USER: ${POSTGRES_USER}
@@ -68,7 +70,7 @@ services:
       DJANGO_DB_PORT: 5432
     volumes:
       - ../Django_Frontend/:/app
-      - static:./monapp/static
+      - static:/app/monapp/static
     restart: unless-stopped
     networks:
      - proxy
