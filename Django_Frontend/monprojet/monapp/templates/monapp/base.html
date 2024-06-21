@@ -8,16 +8,20 @@
 <body>
     <header class="header">
         <nav>
-            <button class="menu-button">Menu</button>
-            <div class="menu-content">
-                <a href="{% url 'home' %}">Home</a>
-                <a href="{% url 'create-client' %}">Create Client</a>
-                <a href="{% url 'create-staff' %}">Create Staff</a>
-                <a href="{% url 'create-staff-type' %}">Create Staff Type</a>
-                <a href="{% url 'view_clients' %}">View Clients</a>
-                <a href="{% url 'view_staff' %}">View Staff</a>
-                <a href="{% url 'view_staff_types' %}">View Staff Types</a>
-                <!-- Ajoutez d'autres liens ici selon vos besoins -->
+            <div class="menu-button">
+            Menu
+                <div class="menu-content">
+                    <a href="{% url 'home' %}">Home</a>
+                    <a href="{% url 'create-client' %}">Create Client</a>
+                    <a href="{% url 'create-staff' %}">Create Staff</a>
+                    <a href="{% url 'create-staff-type' %}">Create Staff Type</a>
+                    <a href="{% url 'view_clients' %}">View Clients</a>
+                    <a href="{% url 'view_staff' %}">View Staff</a>
+                    <a href="{% url 'view_staff_types' %}">View Staff Types</a>
+                    <a href="{% url 'register' %}">Register</a>
+                    <a href="{% url 'login' %}">Login</a>
+                    <!-- Ajoutez d'autres liens ici selon vos besoins -->
+                </div>
             </div>
         </nav>
         <h1>Mon Application</h1>
