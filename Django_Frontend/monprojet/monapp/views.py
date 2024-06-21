@@ -1,6 +1,6 @@
-from django.http import HttpRequest
 import requests
 from django.shortcuts import render, redirect
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.contrib.auth.models import User
 from .forms import ClientForm, StaffForm, StaffTypeForm, RegistrationForm
@@ -12,7 +12,7 @@ from django.http import HttpRequest
 def get_api_url(request: HttpRequest) -> str:
     host = request.get_host()
     protocol = 'https://' if request.is_secure() else 'http://'
-    api_url = f'{protocol}api.{host}/'
+    api_url = f'{protocol}{host}/'
     return api_url
 
 def client_create_view(request):
@@ -64,6 +64,7 @@ def register(request):
         form = RegistrationForm()
     return render(request, 'monapp/register.html', {'form': form})
 
+@csrf_exempt
 def login(request):
     api_url = get_api_url(request) 
     if request.method == 'POST':

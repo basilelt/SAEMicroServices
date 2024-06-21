@@ -2,6 +2,27 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+
+############# DO NOT TOUCH THE CODE BELOW THIS LINE #############
+class Client(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    is_staff = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=False)
+    
+    class Meta:
+        db_table = 'client'
+
+class Staff(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    is_staff = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=False)
+    staff_type = models.ForeignKey('StaffType', on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'staff'
+############# DO NOT TOUCH THE CODE ABOVE THIS LINE #############
+
+
 class StaffType(models.Model):
     type = models.CharField(max_length=100)
     

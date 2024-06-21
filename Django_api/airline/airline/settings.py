@@ -69,7 +69,9 @@ MIDDLEWARE = [
 ]
 
 if ENVIRONMENT != 'development':
-    CSRF_TRUSTED_ORIGINS = ["https://api." + os.getenv('DOMAIN')]
+    CSRF_TRUSTED_ORIGINS = ["https://" + os.getenv('DOMAIN'), "https://api." + os.getenv('DOMAIN')]
+else:
+    CSRF_TRUSTED_ORIGINS = ['*']
 
 ROOT_URLCONF = 'airline.urls'
 
