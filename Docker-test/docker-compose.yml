@@ -30,11 +30,13 @@ services:
       - "traefik.http.routers.pgadmin.rule=Host(`pgadmin.${DOMAIN}`)"
       - "traefik.http.routers.pgadmin.entrypoints=websecure"
       - "traefik.http.routers.pgadmin.tls=true"
-      - "traefik.http.routers.pgadmin.middlewares=redirect-to-https@file" # Note the "@file" to specify it's defined in a file
+      - "traefik.http.routers.pgadmin_http.rule=Host(`pgadmin.${DOMAIN}`)"
+      - "traefik.http.routers.pgadmin_http.entrypoints=web"
+      - "traefik.http.routers.pgadmin_http.middlewares=redirect-to-https@file"
       - "traefik.http.services.pgadmin.loadbalancer.server.url=http://pgadmin:80"
     hostname: pgadmin
     depends_on:
-      - "db"
+      - db
       
   nats:
     image: nats:2.10
@@ -73,11 +75,13 @@ services:
       - "traefik.http.routers.django_api.rule=Host(`api.${DOMAIN}`)"
       - "traefik.http.routers.django_api.entrypoints=websecure"
       - "traefik.http.routers.django_api.tls=true"
-      - "traefik.http.routers.django_api.middlewares=redirect-to-https@file" # Note the "@file" to specify it's defined in a file
+      - "traefik.http.routers.django_api_http.rule=Host(`api.${DOMAIN}`)"
+      - "traefik.http.routers.django_api_http.entrypoints=web"
+      - "traefik.http.routers.django_api_http.middlewares=redirect-to-https@file"
       - "traefik.http.services.django_api.loadbalancer.server.url=http://django_api:80"
     hostname: django_api
     depends_on:
-      - "db"
+      - nats
 
   django_frontend:
     build: 
@@ -101,20 +105,25 @@ services:
       - "traefik.http.routers.django_frontend.rule=Host(`${DOMAIN}`)"
       - "traefik.http.routers.django_frontend.entrypoints=websecure"
       - "traefik.http.routers.django_frontend.tls=true"
-      - "traefik.http.routers.django_frontend.middlewares=redirect-to-https@file" # Note the "@file" to specify it's defined in a file
+      - "traefik.http.routers.django_frontend_http.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.django_frontedn_http.entrypoints=web"
+      - "traefik.http.routers.django_frontedn_http.middlewares=redirect-to-https@file"
       - "traefik.http.services.django_frontend.loadbalancer.server.url=http://django_frontend:80"
     hostname: django_frontend
     depends_on:
-     - "db"
-     - "django_api"
+     - django_api
   
-  traefik:
-    image: traefik:3.0
+  openssl:
     build:
-      context: ./traefik
+      context: ./traefik/certs_builder
       dockerfile: Dockerfile
       args:
         - DOMAIN=${DOMAIN}
+    volumes:
+      - certs:/certs
+
+  traefik:
+    image: traefik:3.0
     environment:
       DOMAIN: ${DOMAIN}
     command:
@@ -128,18 +137,21 @@ services:
       - "443:443"
       - "8080:8080"
     volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
-      - "./traefik/traefik.yml:/traefik.yml"
-      - "./traefik/dynamic_conf.yml:/dynamic_conf.yml"
-      - "certs:/certs"
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./traefik/traefik.yml:/traefik.yml
+      - ./traefik/dynamic_conf.yml:/dynamic_conf.yml
+      - certs:/certs
     networks:
       - proxy
     restart: unless-stopped
+    depends_on:
+      - openssl
+      - django_frontend
 
 volumes:
-  certs:
   db:
   pgadmin:
+  certs:
 
 networks:
   proxy:
