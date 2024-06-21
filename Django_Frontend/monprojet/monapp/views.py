@@ -1,10 +1,11 @@
 import requests
 from django.shortcuts import render, redirect
-from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.contrib.auth.models import User
-from .forms import ClientForm, StaffForm, StaffTypeForm, RegistrationForm
-from .models import Staff, Client, StaffType
+from django.contrib.auth import authenticate, login as auth_login
+from django.contrib.auth.models import User
+from .forms import *
+from .models import *
 from django.http import HttpRequest
 
 # Create your views here.
@@ -64,25 +65,19 @@ def register(request):
         form = RegistrationForm()
     return render(request, 'monapp/register.html', {'form': form})
 
-@csrf_exempt
 def login(request):
-    api_url = get_api_url(request) 
     if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                auth_login(request, user)
+                return redirect('home')
+            else:
+                messages.error(request, 'Invalid username or password.')
+    else:
+        form = LoginForm()
 
-        login_url = f'{api_url}/login/'
-
-        response = requests.post(login_url, data={
-            'username': username,
-            'password': password,
-        })
-
-        if response.status_code == 200:
-            # Login successful, redirect to home page
-            return redirect('home')
-        else:
-            # Login failed, show error message
-            messages.error(request, 'Login failed. Please check your username and password.')
-    
-    return render(request, 'monapp/login.html')
+    return render(request, 'monapp/login.html', {'form': form})
