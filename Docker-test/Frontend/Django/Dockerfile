@@ -12,6 +12,8 @@ WORKDIR /app/monprojet
 ENV VIRTUAL_ENV /env
 ENV PATH /env/bin:$PATH
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:80"]
+COPY ./Docker-test/Frontend/Django/entrypoint.sh /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
 
 EXPOSE 80
