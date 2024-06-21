@@ -65,11 +65,14 @@ def register(request):
     return render(request, 'monapp/register.html', {'form': form})
 
 def login(request):
+    api_url = get_api_url(request) 
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
 
-        response = requests.post('http://your-api-url/login/', data={
+        login_url = f'{api_url}/login/'
+
+        response = requests.post(login_url, data={
             'username': username,
             'password': password,
         })

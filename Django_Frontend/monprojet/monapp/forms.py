@@ -1,8 +1,5 @@
 # Django_Frontend/monprojet/monapp/forms.py
 from django import forms
-from .models import Client, Staff, StaffType
-
-from django import forms
 from django.contrib.auth.models import User
 from .models import Client, Staff, StaffType
 
