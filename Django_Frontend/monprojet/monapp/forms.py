@@ -33,3 +33,7 @@ class RegistrationForm(forms.ModelForm):
             client = Client(user=user)
             client.save()
         return user
+    
+class LoginForm(forms.Form):
+    username = forms.CharField(max_length=150)
+    password = forms.CharField(widget=forms.PasswordInput)
