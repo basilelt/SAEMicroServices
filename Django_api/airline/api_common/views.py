@@ -1,5 +1,4 @@
 #api_common/views.py
-#api_common/views.py
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -9,7 +8,7 @@ from django.core.exceptions import ValidationError
 from .models import Flight, Booking, Airport, Plane, Transaction, CancellationRequest, PaymentGateway, Track
 from .serializers import UserSerializer, FlightSerializer, BookingSerializer, AirportSerializer, PlaneSerializer, TrackSerializer, TransactionSerializer, CancellationRequestSerializer, PaymentGatewaySerializer
 
-class UserListView(generics.ListAPIView):
+class UserListView(generics.ListCreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     #permission_classes = [IsAdminUser]
