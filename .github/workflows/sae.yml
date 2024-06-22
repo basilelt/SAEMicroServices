@@ -1,4 +1,4 @@
-name: Docker Test Workflow
+name: Docker Compose Test Workflow
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  build-and-test:
+  compose-build-and-test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -24,40 +24,41 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          file: Docker-test/API/Dockerfile
-          push: false
-          tags: basilelt/saedev:test
-          build-args: |
-            POSTGRES_DB=app
-            POSTGRES_USER=app
-            POSTGRES_PASSWORD=app
-            DJANGO_ENVIRONMENT=test
-            DJANGO_SUPERUSER_USERNAME=admin
-            DJANGO_SUPERUSER_EMAIL=admin@admin.com
-            DJANGO_SUPERUSER_PASSWORD=admin
-            NATS_USER=user
-            NATS_PASSWORD=password
-            DOMAIN=sae.local
+      - name: Build Docker Compose services
+        run: docker-compose -f Docker/docker-compose.yml build
+        env:
+          POSTGRES_DB: app
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app
+          DJANGO_ENVIRONMENT: test
+          DJANGO_SUPERUSER_USERNAME: admin
+          DJANGO_SUPERUSER_EMAIL: admin@admin.com
+          DJANGO_SUPERUSER_PASSWORD: admin
+          NATS_USER: user
+          NATS_PASSWORD: password
+          DOMAIN: sae.local
 
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: 'basilelt/saedev:test'
-          format: 'table'
-          exit-code: '1'
-          ignore-unfixed: true
+      - name: Start Docker Compose services
+        run: docker-compose -f Docker/docker-compose.yml up -d
 
-      - name: Start container
-        run: docker run -d --name myapp -p 80:80 yourusername/yourapp:test
+      - name: Run Trivy vulnerability scanner on all images
+        run: |
+          docker-compose -f Docker/docker-compose.yml config | grep 'image:' | awk '{print $2}' | xargs -I {} sh -c 'trivy image --exit-code 1 --ignore-unfixed {} || exit 1'
 
       - name: Check website connection
         run: |
-          curl --retry 5 --retry-delay 5 --retry-connrefused http://localhost:80
+          curl -k --retry 5 --retry-delay 5 --retry-connrefused https://${{ env.DOMAIN }} && \
+          curl -k --retry 5 --retry-delay 5 --retry-connrefused https://api.${{ env.DOMAIN }}
+        env:
+          DOMAIN: sae.local
 
-      - name: Scan requirements for CVEs
+      - name: Scan requirements for CVEs in Django API container
         run: |
-          docker exec myapp /bin/bash -c "pip install safety && safety check -r /app/airline/requirements.txt --full-report"
+          docker-compose -f Docker/docker-compose.yml exec -T django_api /bin/bash -c "pip install safety && safety check -r /app/requirements.txt --full-report"
+      
+      - name: Scan requirements for CVEs in Django API container
+        run: |
+          docker-compose -f Docker/docker-compose.yml exec -T django_frontend /bin/bash -c "pip install safety && safety check -r /app/requirements.txt --full-report"
+
+      - name: Cleanup
+        run: docker-compose -f Docker/docker-compose.yml down
