@@ -10,11 +10,7 @@ from django.http import HttpRequest, HttpResponse
 
 # Create your views here.
 
-def get_api_url(request: HttpRequest) -> str:
-    host = request.get_host()
-    protocol = 'https://'# if request.is_secure() else 'http://'
-    api_url = f'{protocol}api.{host}/api/common/'
-    return api_url
+
 
 def client_create_view(request):
     form = ClientForm(request.POST or None)
@@ -60,7 +56,7 @@ def register(request):
         form = RegistrationForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('login')
+            return redirect('Login')
     else:
         form = RegistrationForm()
     return render(request, 'monapp/register.html', {'form': form})
@@ -74,7 +70,7 @@ def login(request):
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 auth_login(request, user)
-                return redirect('home')
+                return redirect('Home')
             else:
                 messages.error(request, 'Invalid username or password.')
     else:
@@ -82,11 +78,17 @@ def login(request):
 
     return render(request, 'monapp/login.html', {'form': form})
 
+def get_api_url(request: HttpRequest) -> str:
+    host = request.get_host()
+    protocol = 'https://'
+    api_url = f'{protocol}api.{host}/api/common/'
+    return api_url
+
 def view_flights(request):
     api_url = get_api_url(request) + 'flights/'  # Adjusted to include the API endpoint
     try:
-        response = requests.get(api_url)
-        response.raise_for_status()  # This will raise an HTTPError if the response was an error
+        response = requests.get(api_url).json()
+        #response.raise_for_status()  # This will raise an HTTPError if the response was an error
         flights = response.json()
     except requests.exceptions.HTTPError as http_err:
         # Handle HTTP errors (e.g., endpoint not found, server error)

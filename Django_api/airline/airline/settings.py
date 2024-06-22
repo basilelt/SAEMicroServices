@@ -41,7 +41,11 @@ if ENVIRONMENT == 'development' or ENVIRONMENT == 'test':
 else:
     ALLOWED_HOSTS = ["api" + os.getenv('DOMAIN')]
 
+# Add near the top of the file
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
+# Enforce HTTPS
+SECURE_SSL_REDIRECT = True
 
 # Application definition
 
@@ -69,7 +73,7 @@ MIDDLEWARE = [
 ]
 
 if ENVIRONMENT != 'development':
-    CSRF_TRUSTED_ORIGINS = ["https://" + os.getenv('DOMAIN'), "https://api." + os.getenv('DOMAIN')]
+    CSRF_TRUSTED_ORIGINS = ["https://" + os.getenv('DOMAIN'), "https://api." + os.getenv('DOMAIN'), "http://" + os.getenv('DOMAIN'), "http://api." + os.getenv('DOMAIN')]
 else:
     CSRF_TRUSTED_ORIGINS = ['*']
 
@@ -165,5 +169,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 CORS_ORIGIN_WHITELIST = [
-    "http://localhost:8010",
+    "https://api." + os.getenv('DOMAIN'),
+    "https://sae.local",
+    "http://sae.local",
 ]
