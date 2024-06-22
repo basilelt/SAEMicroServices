@@ -15,8 +15,9 @@ WORKDIR /app/monprojet
 ENV VIRTUAL_ENV /env
 ENV PATH /env/bin:$PATH
 
-COPY ./Docker-test/Frontend/Django/populate_db_tables.sql /app/monprojet/populate_db_tables.sql
+COPY ./Docker-test/Frontend/Django/populate_db_tables.sql /populate_db_tables.sql
 COPY ./Docker-test/Frontend/Django/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
 

@@ -66,6 +66,9 @@ services:
       DJANGO_DB_PASSWORD: ${POSTGRES_PASSWORD}
       DJANGO_DB_HOST: db  # This is the hostname in docker-compose
       DJANGO_DB_PORT: 5432
+      DJANGO_SUPERUSER_USERNAME: ${DJANGO_SUPERUSER_USERNAME}
+      DJANGO_SUPERUSER_EMAIL: ${DJANGO_SUPERUSER_EMAIL}
+      DJANGO_SUPERUSER_PASSWORD: ${DJANGO_SUPERUSER_PASSWORD}
     volumes:
       - ../Django_Frontend/:/app
       - static:/app/monapp/static
@@ -86,7 +89,7 @@ services:
      - django_api
   
   nginx:
-    build: ./Frontend/nginx
+    build: ./Frontend/Nginx
     volumes:
       - static:/usr/share/nginx/html/static
     restart: unless-stopped

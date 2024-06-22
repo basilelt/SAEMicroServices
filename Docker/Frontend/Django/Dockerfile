@@ -13,6 +13,7 @@ ENV VIRTUAL_ENV /env
 ENV PATH /env/bin:$PATH
 
 COPY ./Docker-test/Frontend/Django/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
 

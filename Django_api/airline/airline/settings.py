@@ -68,7 +68,7 @@ MIDDLEWARE = [
 
 if ENVIRONMENT != 'production':
     CSRF_TRUSTED_ORIGINS = [
-        "https://api" + os.getenv('DOMAIN'), 
+        "https://api." + os.getenv('DOMAIN'), 
         'http://django-api',
         'http://localhost:8000',
         'http://127.0.0.1:8000',
@@ -77,7 +77,7 @@ if ENVIRONMENT != 'production':
         ]
 else:
     CSRF_TRUSTED_ORIGINS = [
-        "https://api" + os.getenv('DOMAIN'), 
+        "https://api." + os.getenv('DOMAIN'), 
         'http://django-api',
         ]
     
