@@ -1,17 +1,7 @@
 #api_common/urls.py
 from django.urls import path
 from rest_framework.authtoken.views import obtain_auth_token
-from .views import (
-    UserListView, UserDetailView, FlightListView,
-    FlightDetailView, BookingListView, BookingDetailView, AirportListView,
-    AirportDetailView, PlaneListView, PlaneDetailView, AllBookingsListView,
-    AddFlightView, UpdateFlightView, DeleteFlightView, AddAirportView,
-    UpdateAirportView, DeleteAirportView, AddPlaneView, UpdatePlaneView, DeletePlaneView,
-    TransactionListView, TransactionDetailView, TrackCreateView,
-    CancellationRequestListView, CancellationRequestDetailView, PaymentGatewayListView, PaymentGatewayDetailView,
-    #new-2
-    ConfirmBookingView
-)
+from .views import *
 
 urlpatterns = [
     path('api-token-auth/', obtain_auth_token, name='api_token_auth'),
@@ -67,7 +57,13 @@ urlpatterns = [
     path('planes/delete/<int:pk>/', DeletePlaneView.as_view(), name='delete-plane'),
 
     # Gestion des pistes
+    path('tracks/', TrackListView.as_view(), name='track-list'),
+    path('tracks/<int:pk>/', TrackDetailView.as_view(), name='track-detail'),
     path('tracks/add/', TrackCreateView.as_view(), name='add-track'),
+    path('tracks/update/<int:pk>/', TrackUpdateView.as_view(), name='update-track'),
+    path("tracks/delete/<int:pk>/", TrackDeleteView.as_view(), name="delete-track"),
+    
+    path('tracks/<int:pk>/', TrackCreateView.as_view(), name='track-detail'),
 
     # Toutes les réservations
     path('all-bookings/', AllBookingsListView.as_view(), name='all-bookings-list'),

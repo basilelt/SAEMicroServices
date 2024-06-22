@@ -290,3 +290,19 @@ class PaymentGatewayDetailView(generics.RetrieveUpdateDestroyAPIView):
 class TrackCreateView(generics.CreateAPIView):
     queryset = Track.objects.all()
     serializer_class = TrackSerializer
+    
+class TrackListView(generics.ListAPIView):
+    queryset = Track.objects.all()
+    serializer_class = TrackSerializer
+    
+class TrackDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Track.objects.all()
+    serializer_class = TrackSerializer
+    
+class TrackUpdateView(generics.UpdateAPIView):
+    queryset = Track.objects.all()
+    serializer_class = TrackSerializer
+    
+class TrackDeleteView(generics.DestroyAPIView):
+    queryset = Track.objects.all()
+    serializer_class = TrackSerializer
