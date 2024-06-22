@@ -58,7 +58,7 @@ jobs:
       - name: Add domain to /etc/hosts
         run: |
             echo "127.0.0.1 ${{ env.DOMAIN }}" | sudo tee -a /etc/hosts && \
-            echo "127.0.0.1 api.${{ env.DOMAIN }}" | sudo tee -a /etc/hosts && \
+            echo "127.0.0.1 api.${{ env.DOMAIN }}" | sudo tee -a /etc/hosts
         env:
           DOMAIN: sae.local
 
