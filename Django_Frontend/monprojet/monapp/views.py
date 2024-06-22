@@ -6,14 +6,14 @@ from django.contrib.auth import authenticate, login as auth_login
 from django.contrib.auth.models import User
 from .forms import *
 from .models import *
-from django.http import HttpRequest
+from django.http import HttpRequest, HttpResponse
 
 # Create your views here.
 
 def get_api_url(request: HttpRequest) -> str:
     host = request.get_host()
-    protocol = 'https://' if request.is_secure() else 'http://'
-    api_url = f'{protocol}{host}/'
+    protocol = 'https://'# if request.is_secure() else 'http://'
+    api_url = f'{protocol}api.{host}/api/common/'
     return api_url
 
 def client_create_view(request):
@@ -81,3 +81,21 @@ def login(request):
         form = LoginForm()
 
     return render(request, 'monapp/login.html', {'form': form})
+
+def view_flights(request):
+    api_url = get_api_url(request) + 'flights/'  # Adjusted to include the API endpoint
+    try:
+        response = requests.get(api_url)
+        response.raise_for_status()  # This will raise an HTTPError if the response was an error
+        flights = response.json()
+    except requests.exceptions.HTTPError as http_err:
+        # Handle HTTP errors (e.g., endpoint not found, server error)
+        return HttpResponse(f"HTTP Error occurred: {http_err}", status=500)
+    except requests.exceptions.JSONDecodeError as json_err:
+        # Handle JSON decode errors
+        return HttpResponse(f"Error decoding JSON: {json_err}", status=500)
+    except Exception as err:
+        # Handle other possible exceptions
+        return HttpResponse(f"An error occurred: {err}", status=500)
+    
+    return render(request, 'monapp/view_flights.html', {'flights': flights})
