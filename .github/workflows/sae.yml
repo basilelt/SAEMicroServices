@@ -56,25 +56,29 @@ jobs:
           done
 
       - name: Add domain to /etc/hosts
-        run: echo "127.0.0.1 ${{ env.DOMAIN }}" | sudo tee -a /etc/hosts
+        run: |
+            echo "127.0.0.1 ${{ env.DOMAIN }}" | sudo tee -a /etc/hosts && \
+            echo "127.0.0.1 api.${{ env.DOMAIN }}" | sudo tee -a /etc/hosts && \
         env:
           DOMAIN: sae.local
 
       - name: Check website connection
         run: |
-          curl -k --retry 5 --retry-delay 5 --retry-connrefused https://${{ env.DOMAIN }} && \
-          curl -k --retry 5 --retry-delay 5 --retry-connrefused https://api.${{ env.DOMAIN }}
+            echo "Pinging https://${{ env.DOMAIN }}"
+            curl -v -k --retry 5 --retry-delay 5 --retry-connrefused https://${{ env.DOMAIN }}
+            echo "Pinging https://api.${{ env.DOMAIN }}"
+            curl -v -k --retry 5 --retry-delay 5 --retry-connrefused https://api.${{ env.DOMAIN }}
         env:
           DOMAIN: sae.local
 
       - name: Scan requirements for CVEs in Django API container
         run: |
-          docker-compose -f Docker/docker-compose.yml exec -T django_api /bin/bash -c "pip install safety && safety check -r /app/requirements.txt --full-report"
-      
+            docker-compose -f Docker/docker-compose.yml exec -T django_api /bin/bash -c "pip install safety && safety check -r /app/requirements.txt --full-report"
+        
       - name: Scan requirements for CVEs in Django Frontend container
         run: |
-          docker-compose -f Docker/docker-compose.yml exec -T django_frontend /bin/bash -c "pip install safety && safety check -r /app/requirements.txt --full-report"
-
+            docker-compose -f Docker/docker-compose.yml exec -T django_frontend /bin/bash -c "pip install safety && safety check -r /app/requirements.txt --full-report"
+            
       - name: Cleanup
         run: |
           docker-compose -f Docker/docker-compose.yml down
