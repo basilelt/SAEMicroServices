@@ -1,4 +1,6 @@
 import requests
+import logging
+from datetime import datetime
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.models import User
@@ -79,25 +81,64 @@ def login(request):
     return render(request, 'monapp/login.html', {'form': form})
 
 def get_api_url(request: HttpRequest) -> str:
-    host = request.get_host()
-    protocol = 'https://'
-    api_url = f'{protocol}api.{host}/api/common/'
+    api_url = 'http://django-api/api/common/'
     return api_url
 
 def view_flights(request):
-    api_url = "http://django-api/api/common/" + 'flights/'  # Adjusted to include the API endpoint
-    try:
-        response = requests.get(api_url)
-        response.raise_for_status()  # This will raise an HTTPError if the response was an error
-        flights = response.json()  # Corrected to call .json() once
-    except requests.exceptions.HTTPError as http_err:
-        # Handle HTTP errors (e.g., endpoint not found, server error)
-        return HttpResponse(f"HTTP Error occurred: {http_err}", status=500)
-    except requests.exceptions.JSONDecodeError as json_err:
-        # Handle JSON decode errors
-        return HttpResponse(f"Error decoding JSON: {json_err}", status=500)
-    except Exception as err:
-        # Handle other possible exceptions
-        return HttpResponse(f"An error occurred: {err}", status=500)
+    api_url = get_api_url(request)
+    flights_url = f'{api_url}flights/'
+    airports_url = f'{api_url}airports/'
+    planes_url = f'{api_url}planes/'
+    tracks_url = f'{api_url}tracks/'
     
-    return render(request, 'monapp/view_flights.html', {'flights': flights})
+    logging.basicConfig(level=logging.DEBUG)
+    
+    try:
+        # Make API calls
+        flights_response = requests.get(flights_url).json()
+        flight_details = []
+        
+        for flight in flights_response:
+            plane = flight['plane']
+            plane_response = requests.get(f"{planes_url}{plane}").json()
+            
+            first_class_capacity = plane_response['first_class_capacity']
+            second_class_capacity = plane_response['second_class_capacity']
+                
+            # Get track origin details
+            track_origin = flight['track_origin']
+            track_origin_response = requests.get(f"{tracks_url}{track_origin}").json()
+            airport_origin_id = track_origin_response['airport']
+            airport_origin_response = requests.get(f"{airports_url}{airport_origin_id}").json()
+            origin = airport_origin_response['location']
+            
+            # Get track destination details
+            track_destination = flight['track_destination']
+            track_destination_response = requests.get(f"{tracks_url}{track_destination}").json()
+            airport_destination_id = track_destination_response['airport']
+            airport_destination_response = requests.get(f"{airports_url}{airport_destination_id}").json()
+            destination = airport_destination_response['location']
+            
+            # Format departure and arrival times
+            departure = datetime.strptime(flight['departure'].rstrip('Z'), '%Y-%m-%dT%H:%M:%S').strftime('%m/%d/%Y-%H:%M')
+            arrival = datetime.strptime(flight['arrival'].rstrip('Z'), '%Y-%m-%dT%H:%M:%S').strftime('%m/%d/%Y-%H:%M')
+
+            # Append flight details for rendering
+            flight_details.append({
+                'first_class_capacity': first_class_capacity,
+                'second_class_capacity': second_class_capacity,
+                'origin': origin,
+                'destination': destination,
+                'departure': departure,
+                'arrival': arrival,
+                'flight_number': flight['flight_number']
+            })
+                    
+        # Render the flight details
+        context = {'flight_details': flight_details}
+        return render(request, 'monapp/view_flights.html', context)
+
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Request error: {e}")
+    except ValueError as e:
+        logging.error(f"Value error: {e}")
