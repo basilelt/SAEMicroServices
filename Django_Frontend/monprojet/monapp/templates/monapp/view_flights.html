@@ -1,0 +1,28 @@
+<!-- Django_Frontend/monprojet/monapp/templates/monapp/view_flights.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Available Flights</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Flight Number</th>
+            <th>Departure</th>
+            <th>Arrival</th>
+            <th>First Class Seats Available</th>
+            <th>Second Class Seats Available</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for flight in flights %}
+        <tr>
+            <td>{{ flight.flight_number }}</td>
+            <td>{{ flight.departure }}</td>
+            <td>{{ flight.arrival }}</td>
+            <td>{{ flight.available_first_class_seats }}</td>
+            <td>{{ flight.available_second_class_seats }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
