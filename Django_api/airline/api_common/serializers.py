@@ -1,5 +1,4 @@
 #api_common/serializers.py
-#api_common/serializers.py
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import Flight, Booking, Airport, Plane, Transaction, CancellationRequest, PaymentGateway, Track
@@ -7,7 +6,18 @@ from .models import Flight, Booking, Airport, Plane, Transaction, CancellationRe
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'is_staff', 'is_superuser']
+        fields = ['id', 'username', 'email', 'password', 'is_staff', 'is_superuser', 'first_name', 'last_name']  # #new3
+        extra_kwargs = {'password': {'write_only': True}}  # 密码字段设为只写
+
+    def create(self, validated_data):
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            email=validated_data['email'],
+            password=validated_data['password'],
+            first_name=validated_data.get('first_name', ''),
+            last_name=validated_data.get('last_name', '')
+        )
+        return user  # #new3
 
 class FlightSerializer(serializers.ModelSerializer):
     class Meta:
