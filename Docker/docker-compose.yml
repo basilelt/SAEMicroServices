@@ -89,7 +89,7 @@ services:
      - django_api
   
   nginx:
-    build: ./Frontend/nginx
+    build: ./Frontend/Nginx
     volumes:
       - static:/usr/share/nginx/html/static
     restart: unless-stopped

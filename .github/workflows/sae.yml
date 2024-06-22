@@ -25,7 +25,6 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build Docker Compose services
-        working-directory: ./Docker
         run: docker-compose -f docker-compose.yml build
         env:
           POSTGRES_DB: app
