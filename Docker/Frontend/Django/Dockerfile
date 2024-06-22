@@ -12,6 +12,8 @@ WORKDIR /app/monprojet
 ENV VIRTUAL_ENV /env
 ENV PATH /env/bin:$PATH
 
-CMD ["daphne", "-b", "0.0.0.0", "-p", "80", "monprojet.asgi:application"]
+COPY ./Docker-test/Frontend/Django/entrypoint.sh /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
 
 EXPOSE 80
