@@ -41,7 +41,7 @@ services:
   nats:
     image: nats:2.10
     volumes:
-       - ./NATS/config/:/etc/nats
+        - ./NATS/config/:/etc/nats
     environment:
       NATS_USER: ${NATS_USER}
       NATS_PASSWORD: ${NATS_PASSWORD}
@@ -99,7 +99,7 @@ services:
       - ../Django_Frontend/:/app
     restart: unless-stopped
     networks:
-     - proxy
+      - proxy
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.django_frontend.rule=Host(`${DOMAIN}`)"
@@ -111,7 +111,7 @@ services:
       - "traefik.http.services.django_frontend.loadbalancer.server.url=http://django_frontend:80"
     hostname: django_frontend
     depends_on:
-     - django_api
+      - django_api
   
   openssl:
     build:
