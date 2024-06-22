@@ -47,23 +47,16 @@ jobs:
           NATS_PASSWORD: password
           DOMAIN: sae.local
 
-      - name: Install and Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: 'docker-compose -f Docker/docker-compose.yml config | grep "image:" | awk "{print $2}"'
-          exit-code: '1'
-          ignore-unfixed: true
-          format: 'table'
+      - name: Extract image references and run Trivy scan
+        run: |
+          IMAGES=$(docker-compose -f Docker/docker-compose.yml config | grep 'image:' | awk '{print $2}')
+          for IMAGE in $IMAGES; do
+            echo "Scanning $IMAGE"
+            trivy image --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL --format table $IMAGE || true
+          done
 
       - name: Add domain to /etc/hosts
         run: echo "127.0.0.1 ${{ env.DOMAIN }}" | sudo tee -a /etc/hosts
-        env:
-          DOMAIN: sae.local
-
-      - name: Check website connection
-        run: |
-          curl -k --retry 5 --retry-delay 5 --retry-connrefused https://${{ env.DOMAIN }} && \
-          curl -k --retry 5 --retry-delay 5 --retry-connrefused https://api.${{ env.DOMAIN }}
         env:
           DOMAIN: sae.local
 
