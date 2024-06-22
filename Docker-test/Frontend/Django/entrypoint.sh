@@ -3,7 +3,7 @@
 echo "Checking for and applying database migrations..."
 python manage.py makemigrations
 python manage.py makemigrations monapp
-python manage.py migrate
+#python manage.py migrate
 
 # Start the Django server
 echo "Starting Django server..."
