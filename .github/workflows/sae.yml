@@ -1,0 +1,63 @@
+name: Docker Test Workflow
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: Docker-test/API/Dockerfile
+          push: false
+          tags: yourusername/yourapp:test
+          build-args: |
+            POSTGRES_DB=app
+            POSTGRES_USER=app
+            POSTGRES_PASSWORD=app
+            DJANGO_ENVIRONMENT=test
+            DJANGO_SUPERUSER_USERNAME=admin
+            DJANGO_SUPERUSER_EMAIL=admin@admin.com
+            DJANGO_SUPERUSER_PASSWORD=admin
+            NATS_USER=user
+            NATS_PASSWORD=password
+            DOMAIN=sae.local
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'yourusername/yourapp:test'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+
+      - name: Start container
+        run: docker run -d --name myapp -p 80:80 yourusername/yourapp:test
+
+      - name: Check website connection
+        run: |
+          curl --retry 5 --retry-delay 5 --retry-connrefused http://localhost:80
+
+      - name: Scan requirements for CVEs
+        run: |
+          docker exec myapp /bin/bash -c "pip install safety && safety check -r /app/airline/requirements.txt --full-report"
