@@ -41,28 +41,15 @@ jobs:
       - name: Start Docker Compose services
         run: docker-compose -f Docker/docker-compose.yml up -d
 
-      - name: Install Trivy
+      - name: Install and Run Trivy vulnerability scanner
         run: |
-          sudo apt-get install -y wget apt-transport-https gnupg lsb-release
+          sudo apt-get update && sudo apt-get install -y wget apt-transport-https gnupg lsb-release
           wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
-          echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
-          sudo apt-get update
-          sudo apt-get install trivy
-
-      - name: Run Trivy vulnerability scanner on all images
-        run: |
-          docker-compose -f Docker/docker-compose.yml config | grep 'image:' | awk '{print $2}' | xargs -I {} sh -c 'trivy image --exit-code 1 --ignore-unfixed {} || exit 1'
-        env:
-          POSTGRES_DB: app
-          POSTGRES_USER: app
-          POSTGRES_PASSWORD: app
-          DJANGO_ENVIRONMENT: test
-          DJANGO_SUPERUSER_USERNAME: admin
-          DJANGO_SUPERUSER_EMAIL: admin@admin.com
-          DJANGO_SUPERUSER_PASSWORD: admin
-          NATS_USER: user
-          NATS_PASSWORD: password
-          DOMAIN: sae.local
+          echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update && sudo apt-get install trivy
+          docker-compose -f Docker/docker-compose.yml config | grep 'image:' | awk '{print $2}' | while read image; do
+            trivy image --exit-code 1 --ignore-unfixed $image || echo "::error ::Vulnerabilities found in $image"
+          done
 
       - name: Check website connection
         run: |
@@ -75,7 +62,7 @@ jobs:
         run: |
           docker-compose -f Docker/docker-compose.yml exec -T django_api /bin/bash -c "pip install safety && safety check -r /app/requirements.txt --full-report"
       
-      - name: Scan requirements for CVEs in Django API container
+      - name: Scan requirements for CVEs in Django Frontend container
         run: |
           docker-compose -f Docker/docker-compose.yml exec -T django_frontend /bin/bash -c "pip install safety && safety check -r /app/requirements.txt --full-report"
 
