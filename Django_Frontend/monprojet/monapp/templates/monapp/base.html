@@ -19,6 +19,9 @@
                 </div>
             </div>
         </nav>
+        {% if user.is_authenticated %}
+            <div>Logged in as: {{ user.username }}</div>
+        {% endif %}
         <h1>Mon Application</h1>
     </header>
     <main>

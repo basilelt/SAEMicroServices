@@ -49,6 +49,13 @@ if ENVIRONMENT == 'development' or ENVIRONMENT == 'test':
 else:
     ALLOWED_HOSTS = [os.getenv('DOMAIN')]
 
+# Add near the top of the file
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Enforce HTTPS
+SECURE_SSL_REDIRECT = True
+
+
 # Application definition
 
 INSTALLED_APPS = [
