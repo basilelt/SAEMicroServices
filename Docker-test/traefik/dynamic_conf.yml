@@ -1,9 +1,5 @@
 http:
   middlewares:
-    add-xforwarded-proto-header:
-        headers:
-          customRequestHeaders:
-            X-Forwarded-Proto: "https"
     redirect-to-https:
       redirectScheme:
         scheme: https

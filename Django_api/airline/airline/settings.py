@@ -162,8 +162,7 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-CORS_ORIGIN_WHITELIST = [
-    "https://api." + os.getenv('DOMAIN'),
-    "https://sae.local",
-    "http://sae.local",
-]
+if ENVIRONMENT == 'development' or ENVIRONMENT == 'test':
+    CORS_ORIGIN_WHITELIST = ['*']
+else:
+    CORS_ORIGIN_WHITELIST = ["https://api." + os.getenv('DOMAIN'), 'http://django-api']
