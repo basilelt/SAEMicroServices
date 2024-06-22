@@ -47,13 +47,7 @@ else:
 if ENVIRONMENT == 'development' or ENVIRONMENT == 'test':
     ALLOWED_HOSTS = ['*']
 else:
-    ALLOWED_HOSTS = [os.getenv('DOMAIN')]
-
-# Add near the top of the file
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
-# Enforce HTTPS
-SECURE_SSL_REDIRECT = True
+    ALLOWED_HOSTS = [os.getenv('DOMAIN'), 'django-frontend']
 
 
 # Application definition
@@ -79,7 +73,7 @@ MIDDLEWARE = [
 ]
 
 if ENVIRONMENT != 'development':
-    CSRF_TRUSTED_ORIGINS = ["https://" + os.getenv('DOMAIN'), "https://api." + os.getenv('DOMAIN')]
+    CSRF_TRUSTED_ORIGINS = ["https://" + os.getenv('DOMAIN'), 'http://django_frontend']
 else:
     CSRF_TRUSTED_ORIGINS = ['*']
 

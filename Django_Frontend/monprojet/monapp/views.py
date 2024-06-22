@@ -85,11 +85,11 @@ def get_api_url(request: HttpRequest) -> str:
     return api_url
 
 def view_flights(request):
-    api_url = get_api_url(request) + 'flights/'  # Adjusted to include the API endpoint
+    api_url = "http://django-api/api/common/" + 'flights/'  # Adjusted to include the API endpoint
     try:
-        response = requests.get(api_url).json()
-        #response.raise_for_status()  # This will raise an HTTPError if the response was an error
-        flights = response.json()
+        response = requests.get(api_url)
+        response.raise_for_status()  # This will raise an HTTPError if the response was an error
+        flights = response.json()  # Corrected to call .json() once
     except requests.exceptions.HTTPError as http_err:
         # Handle HTTP errors (e.g., endpoint not found, server error)
         return HttpResponse(f"HTTP Error occurred: {http_err}", status=500)

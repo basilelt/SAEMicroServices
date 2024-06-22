@@ -79,7 +79,7 @@ services:
       - "traefik.http.routers.django_api_http.entrypoints=web"
       - "traefik.http.routers.django_api_http.middlewares=redirect-to-https@file"
       - "traefik.http.services.django_api.loadbalancer.server.url=http://django_api:80"
-    hostname: django_api
+    hostname: django-api
     depends_on:
       - nats
 
@@ -109,7 +109,7 @@ services:
       - "traefik.http.routers.django_frontend_http.entrypoints=web"
       - "traefik.http.routers.django_frontend_http.middlewares=redirect-to-https@file"
       - "traefik.http.services.django_frontend.loadbalancer.server.url=http://django_frontend:80"
-    hostname: django_frontend
+    hostname: django-frontend
     depends_on:
       - django_api
   
