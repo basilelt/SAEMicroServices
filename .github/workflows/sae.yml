@@ -30,7 +30,7 @@ jobs:
           context: .
           file: Docker-test/API/Dockerfile
           push: false
-          tags: yourusername/yourapp:test
+          tags: basilelt/saedev:test
           build-args: |
             POSTGRES_DB=app
             POSTGRES_USER=app
@@ -46,7 +46,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'yourusername/yourapp:test'
+          image-ref: 'basilelt/saedev:test'
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
