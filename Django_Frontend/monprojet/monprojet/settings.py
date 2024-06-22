@@ -39,12 +39,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = get_random_secret_key()
 
 # SECURITY WARNING: don't run with debug turned on in production!
-if ENVIRONMENT == 'development' or ENVIRONMENT == 'test':
+if ENVIRONMENT != 'production':
     DEBUG = True
 else:
     DEBUG = False
     
-if ENVIRONMENT == 'development' or ENVIRONMENT == 'test':
+if ENVIRONMENT != 'production':
     ALLOWED_HOSTS = ['*']
 else:
     ALLOWED_HOSTS = [os.getenv('DOMAIN'), 'django-frontend']
@@ -72,10 +72,18 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-if ENVIRONMENT != 'development':
-    CSRF_TRUSTED_ORIGINS = ["https://" + os.getenv('DOMAIN'), 'http://django_frontend']
+if ENVIRONMENT != 'production':
+    CSRF_TRUSTED_ORIGINS = [
+        "https://" + os.getenv('DOMAIN'), 
+        'http://django-frontend',
+        'http://localhost:8000',
+        'http://127.0.0.1:8000',
+        ]
 else:
-    CSRF_TRUSTED_ORIGINS = ['*']
+    CSRF_TRUSTED_ORIGINS = [
+        "https://" + os.getenv('DOMAIN'), 
+        'http://django-frontend',
+        ]
 
 ROOT_URLCONF = 'monprojet.urls'
 
@@ -95,7 +103,7 @@ TEMPLATES = [
     },
 ]
 
-if ENVIRONMENT == 'development' or ENVIRONMENT == 'test':
+if ENVIRONMENT != 'production':
     WSGI_APPLICATION = 'monprojet.wsgi.application'
 else:
     ASGI_APPLICATION = 'monprojet.asgi.application'
@@ -103,7 +111,7 @@ else:
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-if ENVIRONMENT == 'test' or ENVIRONMENT == 'production':
+if ENVIRONMENT != 'development':
     # Use PostgreSQL for production
     DATABASES = {
         'default': {

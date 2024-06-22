@@ -31,12 +31,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = get_random_secret_key()
 
 # SECURITY WARNING: don't run with debug turned on in production!
-if ENVIRONMENT == 'development' or ENVIRONMENT == 'test':
+if ENVIRONMENT != 'production':
     DEBUG = True
 else:
     DEBUG = False
     
-if ENVIRONMENT == 'development' or ENVIRONMENT == 'test':
+if ENVIRONMENT != 'production':
     ALLOWED_HOSTS = ['*']
 else:
     ALLOWED_HOSTS = [os.getenv('DOMAIN'), 'django-api']
@@ -66,10 +66,21 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-if ENVIRONMENT != 'development':
-    CSRF_TRUSTED_ORIGINS = ["https://api." + os.getenv('DOMAIN'), 'http://django-api']
+if ENVIRONMENT != 'production':
+    CSRF_TRUSTED_ORIGINS = [
+        "https://api" + os.getenv('DOMAIN'), 
+        'http://django-api',
+        'http://localhost:8000',
+        'http://127.0.0.1:8000',
+        'http://localhost:8010',
+        'http://127.0.0.1:8010',
+        ]
 else:
-    CSRF_TRUSTED_ORIGINS = ['*']
+    CSRF_TRUSTED_ORIGINS = [
+        "https://api" + os.getenv('DOMAIN'), 
+        'http://django-api',
+        ]
+    
 
 ROOT_URLCONF = 'airline.urls'
 
@@ -89,7 +100,7 @@ TEMPLATES = [
     },
 ]
 
-if ENVIRONMENT == 'development' or ENVIRONMENT == 'test':
+if ENVIRONMENT != 'production':
     WSGI_APPLICATION = 'airline.wsgi.application'
 else:
     ASGI_APPLICATION = 'airline.asgi.application'
@@ -98,7 +109,7 @@ else:
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-if ENVIRONMENT == 'test' or ENVIRONMENT == 'production':
+if ENVIRONMENT != 'development':
     # Use PostgreSQL for production
     DATABASES = {
         'default': {
@@ -162,7 +173,15 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-if ENVIRONMENT == 'development' or ENVIRONMENT == 'test':
-    CORS_ORIGIN_WHITELIST = ['*']
+if ENVIRONMENT != 'production':
+    CORS_ORIGIN_WHITELIST = [
+        "https://" + os.getenv('DOMAIN'), 
+        'http://django-frontend',
+        'http://localhost:8000',
+        'http://127.0.0.1:8000'
+        ]
 else:
-    CORS_ORIGIN_WHITELIST = ["https://api." + os.getenv('DOMAIN'), 'http://django-api']
+    CORS_ORIGIN_WHITELIST = [
+        "https://" + os.getenv('DOMAIN'), 
+        'http://django-frontend'
+        ]
