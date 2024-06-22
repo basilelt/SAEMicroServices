@@ -18,19 +18,28 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
       - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build Docker Compose services
-        run: docker-compose -f Docker/docker-compose.yml build
+      - name: Build and start Docker Compose services
+        run: |
+          docker-compose -f Docker/docker-compose.yml up -d --build
         env:
           POSTGRES_DB: app
           POSTGRES_USER: app
           POSTGRES_PASSWORD: app
-          DJANGO_ENVIRONMENT: test
+          DJANGO_ENVIRONMENT: production
           DJANGO_SUPERUSER_USERNAME: admin
           DJANGO_SUPERUSER_EMAIL: admin@admin.com
           DJANGO_SUPERUSER_PASSWORD: admin
@@ -38,18 +47,25 @@ jobs:
           NATS_PASSWORD: password
           DOMAIN: sae.local
 
-      - name: Start Docker Compose services
-        run: docker-compose -f Docker/docker-compose.yml up -d
-
       - name: Install and Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'docker-compose -f Docker/docker-compose.yml config | grep "image:" | awk "{print $2}"'
+          exit-code: '1'
+          ignore-unfixed: true
+          format: 'table'
+
+      - name: Add domain to /etc/hosts
+        run: echo "127.0.0.1 ${{ env.DOMAIN }}" | sudo tee -a /etc/hosts
+        env:
+          DOMAIN: sae.local
+
+      - name: Check website connection
         run: |
-          sudo apt-get update && sudo apt-get install -y wget apt-transport-https gnupg lsb-release
-          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
-          echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee /etc/apt/sources.list.d/trivy.list
-          sudo apt-get update && sudo apt-get install trivy
-          docker-compose -f Docker/docker-compose.yml config | grep 'image:' | awk '{print $2}' | while read image; do
-            trivy image --exit-code 1 --ignore-unfixed $image || echo "::error ::Vulnerabilities found in $image"
-          done
+          curl -k --retry 5 --retry-delay 5 --retry-connrefused https://${{ env.DOMAIN }} && \
+          curl -k --retry 5 --retry-delay 5 --retry-connrefused https://api.${{ env.DOMAIN }}
+        env:
+          DOMAIN: sae.local
 
       - name: Check website connection
         run: |
@@ -67,4 +83,5 @@ jobs:
           docker-compose -f Docker/docker-compose.yml exec -T django_frontend /bin/bash -c "pip install safety && safety check -r /app/requirements.txt --full-report"
 
       - name: Cleanup
-        run: docker-compose -f Docker/docker-compose.yml down
+        run: |
+          docker-compose -f Docker/docker-compose.yml down
