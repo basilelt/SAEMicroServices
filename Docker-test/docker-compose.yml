@@ -106,8 +106,8 @@ services:
       - "traefik.http.routers.django_frontend.entrypoints=websecure"
       - "traefik.http.routers.django_frontend.tls=true"
       - "traefik.http.routers.django_frontend_http.rule=Host(`${DOMAIN}`)"
-      - "traefik.http.routers.django_frontedn_http.entrypoints=web"
-      - "traefik.http.routers.django_frontedn_http.middlewares=redirect-to-https@file"
+      - "traefik.http.routers.django_frontend_http.entrypoints=web"
+      - "traefik.http.routers.django_frontend_http.middlewares=redirect-to-https@file"
       - "traefik.http.services.django_frontend.loadbalancer.server.url=http://django_frontend:80"
     hostname: django_frontend
     depends_on:
