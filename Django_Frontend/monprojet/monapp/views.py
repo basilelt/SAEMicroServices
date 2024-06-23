@@ -1,6 +1,6 @@
 import requests
-import json
 import logging
+import os
 from datetime import datetime
 from django.shortcuts import render, redirect
 from django.contrib import messages
@@ -14,6 +14,15 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 # Create your views here.
 
 logging.basicConfig(level=logging.INFO)
+
+ENVIRONNEMENT = os.environ.get('DJANGO_ENVIRONMENT', 'development')
+
+def get_api_url():
+    if ENVIRONNEMENT != 'development':
+        api_url = 'http://django-api/api/common/'
+    else:
+        api_url = 'http://localhost:8010/api/common/'
+    return api_url
 
 def client_create_view(request):
     form = ClientForm(request.POST or None)
@@ -77,7 +86,18 @@ def login(request):
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 auth_login(request, user)
-                return redirect('home')
+                
+                # Assuming the API endpoint for getting token is '/api/token/'
+                # and it expects 'username' and 'password' as POST data
+                response = requests.post(get_api_url() + 'token/', data={'username': username, 'password': password})
+                if response.status_code == 200:
+                    token = response.json().get('token')
+                    # Store the token in session or send as a cookie
+                    request.session['auth_token'] = token
+                    # Redirect to home with token in session
+                    return redirect('home')
+                else:
+                    messages.error(request, 'Failed to retrieve authentication token.')
             else:
                 messages.error(request, 'Invalid username or password.')
     else:
@@ -89,12 +109,8 @@ def logout(request):
     auth_logout(request)
     return redirect('home')  # Redirect to a page of your choice, e.g., the home page
 
-def get_api_url(request: HttpRequest) -> str:
-    api_url = 'http://django-api/api/common/'
-    return api_url
-
 def view_flights(request):
-    api_url = get_api_url(request)
+    api_url = get_api_url()
     flights_url = f'{api_url}flights/'
     airports_url = f'{api_url}airports/'
     planes_url = f'{api_url}planes/'
@@ -155,14 +171,13 @@ def book_flight(request, flight_id):
         return HttpResponse('You must be logged in to book a flight.', status=401)
 
     # Assuming get_api_url is a function that constructs the API URL correctly
-    api_url = get_api_url(request) + 'bookings/'  # Updated endpoint to match the API's expected endpoint for creating bookings
+    api_url = get_api_url() + 'bookings/'  # Updated endpoint to match the API's expected endpoint for creating bookings
 
     # Token should ideally be retrieved dynamically or set in a secure manner
-    token = request.session.get('api_token', '')  # Example of retrieving token from session
+    token = request.session.get('auth_token')
 
     if request.method == 'POST':
         booking_type = request.POST.get('booking_type')
-        client_id = request.user.id  # Assuming the client's ID is the user ID
 
         headers = {
             'Authorization': f'Token {token}',
@@ -172,8 +187,8 @@ def book_flight(request, flight_id):
         data = {
             'flight': flight_id,
             'booking_type': booking_type,
-            'client': client_id,  # This field might not be necessary if the API infers client from the token
         }
+        logging.debug(f'Sending POST request to {api_url} with headers {headers} and data {data}')
 
         response = requests.post(api_url, headers=headers, json=data)
 
