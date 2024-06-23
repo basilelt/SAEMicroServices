@@ -8,6 +8,7 @@
 </head>
 <body>
     <header class="header">
+        <h1>Mon Application</h1>
         <nav>
             <div class="menu-button">
             Menu
@@ -20,9 +21,15 @@
             </div>
         </nav>
         {% if user.is_authenticated %}
-            <div>Logged in as: {{ user.username }}</div>
+        <p>Logged in as: {{ user.username }}</p>
+        <form action="{% url 'logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="menu-button">Logout</button>
+            </form>
+        {% else %}
+            <a href="{% url 'login' %}" class="menu-button">Login</a>
         {% endif %}
-        <h1>Mon Application</h1>
+        
     </header>
     <main>
         {% block content %}
