@@ -6,7 +6,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import authenticate, login as auth_login
+from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from .forms import *
 from .models import *
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
@@ -59,7 +59,7 @@ def register(request):
         form = RegistrationForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('Login')
+            return redirect('login')
     else:
         form = RegistrationForm()
     return render(request, 'monapp/register.html', {'form': form})
@@ -67,7 +67,7 @@ def register(request):
 def login(request):
     # Check if the user is already authenticated
     if request.user.is_authenticated:
-        return HttpResponseRedirect('Home')  # Redirect them to a home page or another appropriate page
+        return HttpResponseRedirect('home')  # Redirect them to a home page or another appropriate page
 
     if request.method == 'POST':
         form = LoginForm(request.POST)
@@ -77,13 +77,17 @@ def login(request):
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 auth_login(request, user)
-                return redirect('Home')
+                return redirect('home')
             else:
                 messages.error(request, 'Invalid username or password.')
     else:
         form = LoginForm()
 
     return render(request, 'monapp/login.html', {'form': form})
+
+def logout(request):
+    auth_logout(request)
+    return redirect('home')  # Redirect to a page of your choice, e.g., the home page
 
 def get_api_url(request: HttpRequest) -> str:
     api_url = 'http://django-api/api/common/'
@@ -146,45 +150,38 @@ def view_flights(request):
     except ValueError as e:
         logging.error(f"Value error: {e}")
 
-@login_required
 def book_flight(request, flight_id):
     if not request.user.is_authenticated:
         return HttpResponse('You must be logged in to book a flight.', status=401)
-    else:
-        api_url = get_api_url(request)
-        booking_add_url = f'{api_url}bookings/add/'
-        if request.method == 'POST':
 
-            logging.info(f"Received booking request with data: {request.POST}")
+    # Assuming get_api_url is a function that constructs the API URL correctly
+    api_url = get_api_url(request) + 'bookings/'  # Updated endpoint to match the API's expected endpoint for creating bookings
 
-            # Ensure flight_id is correctly obtained from the URL parameter or form, if necessary
-            # flight_id = request.POST.get('flight_id')  # Uncomment if flight_id should come from the form
+    # Token should ideally be retrieved dynamically or set in a secure manner
+    token = request.session.get('api_token', '')  # Example of retrieving token from session
 
-            booking_type = request.POST.get('booking_type')
+    if request.method == 'POST':
+        booking_type = request.POST.get('booking_type')
+        client_id = request.user.id  # Assuming the client's ID is the user ID
 
-            headers = {
-            'Authorization': 'Token 577aa4b14d8fd1b8747ffea413b228d56344cce0',
+        headers = {
+            'Authorization': f'Token {token}',
             'Content-Type': 'application/json',
         }
-            # Ensure the data dictionary correctly maps form fields to API fields
-            data = {
-                'flight': flight_id,  # Ensure this is the correct flight_id intended for the booking
-                'booking_type': booking_type,
-                'client': request.user.id,  # Ensure the client is correctly obtained
-            }
 
-            logging.info(f"Sending booking request with headers: {headers} and data: {data}")
+        data = {
+            'flight': flight_id,
+            'booking_type': booking_type,
+            'client': client_id,  # This field might not be necessary if the API infers client from the token
+        }
 
-            # Send the booking request to the API
-            response = requests.post(booking_add_url, headers=headers, data=json.dumps(data))
+        response = requests.post(api_url, headers=headers, json=data)
 
-            # Call Django API to create a booking
-            response = requests.post(booking_add_url, data=data)
-            if response.status_code == 201:
-                return redirect('Success')  # Redirect to a success page or another relevant page
-            else:
-                return HttpResponse('Booking failed. Please try again later.')
+        if response.status_code == 201:
+            return redirect('success')  # Redirect to a success page or another relevant page
+        else:
+            return HttpResponse(f'Booking failed. Please try again later. Error: {response.text}')
 
-        # If GET request, display the booking form
-        # You might want to pass additional context such as flight details
-        return render(request, 'monapp/book_flight.html', {'flight_id': flight_id})
+    # If GET request, display the booking form with flight details
+    # Ensure the flight_id is passed to the template for use in the form
+    return render(request, 'monapp/book_flight.html', {'flight_id': flight_id})

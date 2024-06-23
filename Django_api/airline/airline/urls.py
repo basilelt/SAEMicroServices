@@ -22,13 +22,13 @@ from drf_yasg import openapi
 from rest_framework import permissions
 
 schema_view = get_schema_view(
-   openapi.Info(
-      title="Airline API",
-      default_version='v1',
-      description="API documentation for Airline app",
-   ),
-   public=True,
-   permission_classes=(permissions.AllowAny,),
+    openapi.Info(
+        title="Airline API",
+        default_version='v1',
+        description="API documentation for Airline app",
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
 )
 
 urlpatterns = [
