@@ -9,7 +9,7 @@ echo "Checking for and applying database migrations..."
 python manage.py makemigrations
 python manage.py makemigrations monapp
 #python manage.py migrate
-#python manage.py createcustomsuperuser
+python manage.py createcustomsuperuser
 
 # Populate the database tables from the SQL script
 echo "Populating database tables..."

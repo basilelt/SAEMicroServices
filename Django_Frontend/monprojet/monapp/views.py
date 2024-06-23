@@ -170,14 +170,13 @@ def book_flight(request, flight_id):
     if not request.user.is_authenticated:
         return HttpResponse('You must be logged in to book a flight.', status=401)
 
-    # Assuming get_api_url is a function that constructs the API URL correctly
-    api_url = get_api_url() + 'bookings/'  # Updated endpoint to match the API's expected endpoint for creating bookings
+    api_url = get_api_url() + 'bookings/'
 
-    # Token should ideally be retrieved dynamically or set in a secure manner
     token = request.session.get('auth_token')
 
     if request.method == 'POST':
         booking_type = request.POST.get('booking_type')
+        logging.info(f'Booking type: {booking_type}')
 
         headers = {
             'Authorization': f'Token {token}',
@@ -185,18 +184,23 @@ def book_flight(request, flight_id):
         }
 
         data = {
-            'flight': flight_id,
+            'client_id': request.user.client.id,
             'booking_type': booking_type,
+            'flight': flight_id,
         }
-        logging.debug(f'Sending POST request to {api_url} with headers {headers} and data {data}')
 
-        response = requests.post(api_url, headers=headers, json=data)
+        try:
+            logging.info(f'Sending POST request to {api_url} with headers {headers} and data {data}')
+            response = requests.post(api_url, headers=headers, json=data)
+            logging.info(f'Response Status: {response.status_code}, Headers: {response.headers}, Body: {response.text}')
 
-        if response.status_code == 201:
-            return redirect('success')  # Redirect to a success page or another relevant page
-        else:
-            return HttpResponse(f'Booking failed. Please try again later. Error: {response.text}')
+            if response.status_code == 201:
+                return redirect('success')
+            else:
+                return HttpResponse(f'Booking failed. Please try again later. Error: {response.text}')
+        except requests.exceptions.RequestException as e:
+            logging.error(f'Request error: {e}')
+        except Exception as e:
+            logging.error(f'Unexpected error: {e}')
 
-    # If GET request, display the booking form with flight details
-    # Ensure the flight_id is passed to the template for use in the form
     return render(request, 'monapp/book_flight.html', {'flight_id': flight_id})

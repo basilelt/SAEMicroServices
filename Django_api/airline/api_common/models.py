@@ -105,7 +105,7 @@ class Flight(models.Model):
 
 class BookingType(models.Model):
     type = models.CharField(max_length=30)
-    price = models.FloatField(null=True, blank=True)
+    price = models.FloatField(null=True)
 
     class Meta:
         db_table = 'booking_type'
