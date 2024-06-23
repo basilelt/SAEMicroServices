@@ -74,7 +74,7 @@ MIDDLEWARE = [
 
 if ENVIRONMENT != 'production':
     CSRF_TRUSTED_ORIGINS = [
-        "https://" + os.getenv('DOMAIN'), 
+        "https://" + os.getenv('DOMAIN', 'localhost'), 
         'http://django-frontend',
         'http://localhost:8000',
         'http://127.0.0.1:8000',

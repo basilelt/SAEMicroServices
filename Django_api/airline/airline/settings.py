@@ -68,7 +68,7 @@ MIDDLEWARE = [
 
 if ENVIRONMENT != 'production':
     CSRF_TRUSTED_ORIGINS = [
-        "https://api." + os.getenv('DOMAIN'), 
+        "https://api." + os.getenv('DOMAIN', 'localhost'), 
         'http://django-api',
         'http://localhost:8000',
         'http://127.0.0.1:8000',
@@ -175,7 +175,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 if ENVIRONMENT != 'production':
     CORS_ORIGIN_WHITELIST = [
-        "https://" + os.getenv('DOMAIN'), 
+        "https://" + os.getenv('DOMAIN', 'localhost'), 
         'http://django-frontend',
         'http://localhost:8000',
         'http://127.0.0.1:8000'
