@@ -1,18 +1,19 @@
 import requests
+import json
 import logging
 from datetime import datetime
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login as auth_login
-from django.contrib.auth.models import User
 from .forms import *
 from .models import *
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 
 # Create your views here.
 
-
+logging.basicConfig(level=logging.INFO)
 
 def client_create_view(request):
     form = ClientForm(request.POST or None)
@@ -64,6 +65,10 @@ def register(request):
     return render(request, 'monapp/register.html', {'form': form})
 
 def login(request):
+    # Check if the user is already authenticated
+    if request.user.is_authenticated:
+        return HttpResponseRedirect('Home')  # Redirect them to a home page or another appropriate page
+
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
@@ -91,8 +96,6 @@ def view_flights(request):
     planes_url = f'{api_url}planes/'
     tracks_url = f'{api_url}tracks/'
     
-    logging.basicConfig(level=logging.DEBUG)
-    
     try:
         # Make API calls
         flights_response = requests.get(flights_url).json()
@@ -104,14 +107,14 @@ def view_flights(request):
             
             first_class_capacity = plane_response['first_class_capacity']
             second_class_capacity = plane_response['second_class_capacity']
-                
+
             # Get track origin details
             track_origin = flight['track_origin']
             track_origin_response = requests.get(f"{tracks_url}{track_origin}").json()
             airport_origin_id = track_origin_response['airport']
             airport_origin_response = requests.get(f"{airports_url}{airport_origin_id}").json()
             origin = airport_origin_response['location']
-            
+
             # Get track destination details
             track_destination = flight['track_destination']
             track_destination_response = requests.get(f"{tracks_url}{track_destination}").json()
@@ -121,8 +124,7 @@ def view_flights(request):
             
             # Format departure and arrival times
             departure = datetime.strptime(flight['departure'].rstrip('Z'), '%Y-%m-%dT%H:%M:%S').strftime('%m/%d/%Y-%H:%M')
-            arrival = datetime.strptime(flight['arrival'].rstrip('Z'), '%Y-%m-%dT%H:%M:%S').strftime('%m/%d/%Y-%H:%M')
-
+            arrival = datetime.strptime(flight['arrival'].rstrip('Z'), '%Y-%m-%dT%H:%M:%S').strftime('%m/%d/%Y-%H:%M')  
             # Append flight details for rendering
             flight_details.append({
                 'first_class_capacity': first_class_capacity,
@@ -131,7 +133,8 @@ def view_flights(request):
                 'destination': destination,
                 'departure': departure,
                 'arrival': arrival,
-                'flight_number': flight['flight_number']
+                'flight_number': flight['flight_number'],
+                'id': flight['id'],
             })
                     
         # Render the flight details
@@ -142,3 +145,46 @@ def view_flights(request):
         logging.error(f"Request error: {e}")
     except ValueError as e:
         logging.error(f"Value error: {e}")
+
+@login_required
+def book_flight(request, flight_id):
+    if not request.user.is_authenticated:
+        return HttpResponse('You must be logged in to book a flight.', status=401)
+    else:
+        api_url = get_api_url(request)
+        booking_add_url = f'{api_url}bookings/add/'
+        if request.method == 'POST':
+
+            logging.info(f"Received booking request with data: {request.POST}")
+
+            # Ensure flight_id is correctly obtained from the URL parameter or form, if necessary
+            # flight_id = request.POST.get('flight_id')  # Uncomment if flight_id should come from the form
+
+            booking_type = request.POST.get('booking_type')
+
+            headers = {
+            'Authorization': 'Token 577aa4b14d8fd1b8747ffea413b228d56344cce0',
+            'Content-Type': 'application/json',
+        }
+            # Ensure the data dictionary correctly maps form fields to API fields
+            data = {
+                'flight': flight_id,  # Ensure this is the correct flight_id intended for the booking
+                'booking_type': booking_type,
+                'client': request.user.id,  # Ensure the client is correctly obtained
+            }
+
+            logging.info(f"Sending booking request with headers: {headers} and data: {data}")
+
+            # Send the booking request to the API
+            response = requests.post(booking_add_url, headers=headers, data=json.dumps(data))
+
+            # Call Django API to create a booking
+            response = requests.post(booking_add_url, data=data)
+            if response.status_code == 201:
+                return redirect('Success')  # Redirect to a success page or another relevant page
+            else:
+                return HttpResponse('Booking failed. Please try again later.')
+
+        # If GET request, display the booking form
+        # You might want to pass additional context such as flight details
+        return render(request, 'monapp/book_flight.html', {'flight_id': flight_id})

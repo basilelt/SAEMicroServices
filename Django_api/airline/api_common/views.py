@@ -2,11 +2,11 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from .models import Flight, Booking, Airport, Plane, Transaction, CancellationRequest, PaymentGateway, Track
-from .serializers import UserSerializer, FlightSerializer, BookingSerializer, AirportSerializer, PlaneSerializer, TrackSerializer, TransactionSerializer, CancellationRequestSerializer, PaymentGatewaySerializer
+from .models import *
+from .serializers import *
 
 class UserListView(generics.ListCreateAPIView):
     queryset = User.objects.all()
@@ -37,38 +37,15 @@ class BookingListView(generics.ListCreateAPIView):
         user = self.request.user
         return Booking.objects.filter(client=user)
 
-    #new-2
-    def create(self, request, *args, **kwargs):
-        user = request.user
+    def create(self, request):
         data = request.data
         flight = Flight.objects.get(id=data['flight'])
-        booking_type = BookingType.objects.get(id=data['booking_type'])
-        price = data['price']
-        seat_class = data.get('seat_class', 'second')
-
-        if seat_class == 'second' and flight.available_second_class_seats > 0:
-            booking = Booking.objects.create(
-                client=user,
-                flight=flight,
-                booking_type=booking_type,
-                price=price,
-                status='pending'
-            )
-            flight.available_second_class_seats -= 1
-            flight.save()
-        elif seat_class == 'first' and flight.available_first_class_seats > 0:
-            booking = Booking.objects.create(
-                client=user,
-                flight=flight,
-                booking_type=booking_type,
-                price=price,
-                status='pending'
-            )
-            flight.available_first_class_seats -= 1
-            flight.save()
-        else:
-            raise ValidationError("No available seats in the selected class.")
-        
+        # Assuming 'client' is a field in 'Booking' model that refers to the user
+        booking = Booking.objects.create(
+            client=request.user,
+            flight=flight,
+            # Add other necessary fields from 'data' as needed
+        )
         booking.save()
         return Response(BookingSerializer(booking).data, status=status.HTTP_201_CREATED)
 
