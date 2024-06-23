@@ -41,4 +41,4 @@ class LoginForm(forms.Form):
 class BookingForm(forms.ModelForm):
     class Meta:
         model = Booking
-        fields = ['price', 'booking_type', 'client', 'flight']
+        fields = ['booking_type', 'client', 'flight']

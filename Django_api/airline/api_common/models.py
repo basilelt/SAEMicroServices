@@ -105,13 +105,13 @@ class Flight(models.Model):
 
 class BookingType(models.Model):
     type = models.CharField(max_length=30)
+    price = models.FloatField(null=True, blank=True)
 
     class Meta:
         db_table = 'booking_type'
 
 class Booking(models.Model):
     booking_date = models.DateTimeField(auto_now_add=True)
-    price = models.FloatField()
     booking_type = models.ForeignKey(BookingType, on_delete=models.CASCADE)
     client = models.ForeignKey(User, on_delete=models.CASCADE)
     flight = models.ForeignKey(Flight, on_delete=models.CASCADE)
