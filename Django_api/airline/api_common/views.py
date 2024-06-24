@@ -51,7 +51,7 @@ class BookingListView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        return Booking.objects.filter(client=user)
+        return Booking.objects.filter(client=self.request.user)
 
     def create(self, request):
         data = request.data

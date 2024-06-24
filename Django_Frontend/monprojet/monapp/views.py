@@ -2,7 +2,7 @@ import requests
 import logging
 import os
 from datetime import datetime
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
@@ -10,6 +10,7 @@ from django.contrib.auth import authenticate, login as auth_login, logout as aut
 from .forms import *
 from .models import *
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.urls import reverse
 
 # Create your views here.
 
@@ -195,7 +196,8 @@ def book_flight(request, flight_id):
             response = requests.post(api_url, headers=headers, json=data)
 
             if response.status_code == 201:
-                return redirect('success')
+                booking_id = response.json().get('id')  # Example, adjust based on actual response structure
+                return redirect('confirm_booking', booking_id=booking_id)
             else:
                 return HttpResponse(f'Booking failed. Please try again later. Error: {response.text}')
         except requests.exceptions.RequestException as e:
@@ -204,3 +206,50 @@ def book_flight(request, flight_id):
             logging.error(f'Unexpected error: {e}')
 
     return render(request, 'monapp/book_flight.html', {'flight_id': flight_id})
+
+def payment(request, booking_id):
+    booking = get_object_or_404(Booking, id=booking_id)
+    if request.method == 'POST':
+        form = PaymentForm(request.POST)
+        if form.is_valid():
+            # Process payment here
+            # On successful payment:
+            return redirect('confirm_booking', booking_id=booking.id)
+    else:
+        form = PaymentForm(initial={'booking_id': booking_id})
+    return render(request, 'monapp/payment.html', {'form': form, 'booking': booking})
+
+def view_bookings(request):
+    if not request.user.is_authenticated:
+        return HttpResponse('You must be logged in to view your bookings.', status=401)
+
+    api_url = get_api_url() + 'bookings/'  # Make sure this is the correct endpoint
+    token = request.session.get('auth_token')
+
+    headers = {
+        'Authorization': f'Token {token}',
+    }
+
+    try:
+        response = requests.get(api_url, headers=headers)
+        if response.status_code == 200:
+            bookings = response.json()
+        else:
+            return HttpResponse('Failed to fetch bookings. Please try again later.', status=response.status_code)
+    except requests.exceptions.RequestException as e:
+        return HttpResponse(f'Request error: {e}', status=500)
+
+    return render(request, 'monapp/user_bookings.html', {'bookings': bookings})
+
+
+def confirm_booking(request, booking_id):
+    if request.method == 'POST':
+        # Redirect to the payment page
+        return redirect('payment', booking_id=booking_id)
+    else:
+        booking = get_object_or_404(Booking, id=booking_id)
+        flight = booking.flight
+        # Add any additional logic here if needed to fetch or format flight details
+        context = {'booking': booking, 'flight': flight}
+        return render(request, 'monapp/confirm_booking.html', context)
+    

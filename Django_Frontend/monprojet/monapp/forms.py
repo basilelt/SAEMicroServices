@@ -42,3 +42,7 @@ class BookingForm(forms.ModelForm):
     class Meta:
         model = Booking
         fields = ['booking_type', 'client', 'flight']
+        
+class PaymentForm(forms.Form):
+    booking_id = forms.IntegerField(widget=forms.HiddenInput())
+    # Add other fields as required by your payment method
