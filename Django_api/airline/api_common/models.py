@@ -104,11 +104,13 @@ class Flight(models.Model):
         db_table = 'flight'
 
 class BookingType(models.Model):
-    type = models.CharField(max_length=30)
+    type = models.CharField(max_length=30)  # 例如：'Flexible', 'Non-refundable'
+    #class_type = models.CharField(max_length=30, choices=[('first', 'First Class'), ('second', 'Second Class')])
     price = models.FloatField(null=True)
 
     class Meta:
         db_table = 'booking_type'
+
 
 class Booking(models.Model):
     booking_date = models.DateTimeField(auto_now_add=True)
