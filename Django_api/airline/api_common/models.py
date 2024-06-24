@@ -105,7 +105,7 @@ class Flight(models.Model):
 
 class BookingType(models.Model):
     type = models.CharField(max_length=30)  # 例如：'Flexible', 'Non-refundable'
-    class_type = models.CharField(max_length=30, choices=[('first', 'First Class'), ('second', 'Second Class')])
+    #class_type = models.CharField(max_length=30, choices=[('first', 'First Class'), ('second', 'Second Class')])
     price = models.FloatField(null=True)
 
     class Meta:
