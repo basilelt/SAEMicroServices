@@ -1,0 +1,15 @@
+{% extends 'monapp/base.html' %}
+{% block content %}
+    <h1>Your Bookings</h1>
+    {% if bookings %}
+        <ul>
+            {% for booking in bookings %}
+                <li>
+                    Booking ID: {{ booking.id }}, Flight: {{ booking.flight }}, Status: {{ booking.status }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>You have no bookings.</p>
+    {% endif %}
+{% endblock %}

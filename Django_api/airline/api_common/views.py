@@ -2,15 +2,14 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
 from django.core.exceptions import ValidationError
+from django.shortcuts import get_object_or_404
 from .models import *
 from .serializers import *
-from django.contrib.auth import authenticate
-from rest_framework.authtoken.models import Token
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.exceptions import NotAuthenticated
 
 class ObtainAuthToken(APIView):
     permission_classes = [AllowAny]
@@ -52,14 +51,14 @@ class BookingListView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        if not user.is_authenticated:
-            raise NotAuthenticated("You must be logged in to view this page.")
-        return Booking.objects.filter(client=user)
+        return Booking.objects.filter(client=self.request.user)
 
     def create(self, request):
         data = request.data
         flight = Flight.objects.get(id=data['flight'])
-        booking_type = data.get('booking_type')
+        booking_type_id = data.get('booking_type')  # Expecting an ID for booking_type
+        booking_type = get_object_or_404(BookingType, id=booking_type_id)
+
         booking = Booking.objects.create(
             client=request.user,
             booking_type=booking_type,
