@@ -12,7 +12,7 @@ from .models import *
 from .serializers import *
 
 class ObtainAuthToken(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
         username = request.data.get('username')
@@ -51,7 +51,7 @@ class BookingListView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        return Booking.objects.filter(client=self.request.user)
+        return Booking.objects.filter(client=user)
 
     def create(self, request):
         data = request.data
@@ -63,6 +63,7 @@ class BookingListView(generics.ListCreateAPIView):
             client=request.user,
             booking_type=booking_type,
             flight=flight,
+            # Add other necessary fields from 'data' as needed
         )
         booking.save()
         return Response(BookingSerializer(booking).data, status=status.HTTP_201_CREATED)
@@ -73,52 +74,103 @@ class BookingDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Booking.objects.none()
         user = self.request.user
-        if not user.is_authenticated:
-            raise NotAuthenticated("You must be logged in to view this page.")
         return Booking.objects.filter(client=user, pk=self.kwargs.get('pk'))
+
+    #new-2
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.status == 'confirmed':
+            instance.status = 'canceled'
+            instance.save()
+            flight = instance.flight
+            if instance.booking_type.type == 'second':
+                flight.available_second_class_seats += 1
+            elif instance.booking_type.type == 'first':
+                flight.available_first_class_seats += 1
+            flight.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            raise ValidationError("Only confirmed bookings can be canceled.")
 
 class AirportListView(generics.ListCreateAPIView):
     queryset = Airport.objects.all()
     serializer_class = AirportSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticated]
 
 class AirportDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Airport.objects.all()
     serializer_class = AirportSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticated]
 
 class PlaneListView(generics.ListCreateAPIView):
     queryset = Plane.objects.all()
     serializer_class = PlaneSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticated]
 
 class PlaneDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Plane.objects.all()
     serializer_class = PlaneSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticated]
 
 class AllBookingsListView(generics.ListAPIView):
     queryset = Booking.objects.all()
     serializer_class = BookingSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticated]
 
-# 以下是新增视图的权限更新
+#new-2
 class AddFlightView(generics.CreateAPIView):
     queryset = Flight.objects.all()
     serializer_class = FlightSerializer
     permission_classes = [IsAdminUser]
 
+    def create(self, request, *args, **kwargs):
+        data = request.data
+        plane = Plane.objects.get(id=data['plane'])
+        track_origin = Track.objects.get(id=data['track_origin'])
+        track_destination = Track.objects.get(id=data['track_destination'])
+        
+        flight = Flight.objects.create(
+            flight_number=data['flight_number'],
+            departure=data['departure'],
+            arrival=data['arrival'],
+            plane=plane,
+            track_origin=track_origin,
+            track_destination=track_destination,
+            available_second_class_seats=plane.second_class_capacity,
+            available_first_class_seats=plane.first_class_capacity
+        )
+        flight.save()
+        return Response(FlightSerializer(flight).data, status=status.HTTP_201_CREATED)
+
+#new-2
 class UpdateFlightView(generics.UpdateAPIView):
     queryset = Flight.objects.all()
     serializer_class = FlightSerializer
     permission_classes = [IsAdminUser]
 
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
+
+#new-2
 class DeleteFlightView(generics.DestroyAPIView):
     queryset = Flight.objects.all()
     serializer_class = FlightSerializer
     permission_classes = [IsAdminUser]
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+# new-2
 class ConfirmBookingView(APIView):
     permission_classes = [IsAdminUser]
 
@@ -165,13 +217,11 @@ class DeletePlaneView(generics.DestroyAPIView):
     serializer_class = PlaneSerializer
     permission_classes = [IsAdminUser]
 
-# 根据需要继续添加或更新其他视图的权限设置
-
 # new-2
 class TransactionListView(generics.ListCreateAPIView):
     queryset = Transaction.objects.all()
     serializer_class = TransactionSerializer
-    #permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
@@ -181,7 +231,7 @@ class TransactionListView(generics.ListCreateAPIView):
 class TransactionDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Transaction.objects.all()
     serializer_class = TransactionSerializer
-    #permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         if getattr(self, 'swagger_fake_view', False):
@@ -193,7 +243,7 @@ class TransactionDetailView(generics.RetrieveUpdateDestroyAPIView):
 class CancellationRequestListView(generics.ListCreateAPIView):
     queryset = CancellationRequest.objects.all()
     serializer_class = CancellationRequestSerializer
-    #permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
@@ -203,7 +253,7 @@ class CancellationRequestListView(generics.ListCreateAPIView):
 class CancellationRequestDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = CancellationRequest.objects.all()
     serializer_class = CancellationRequestSerializer
-    #permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         if getattr(self, 'swagger_fake_view', False):
@@ -215,7 +265,7 @@ class CancellationRequestDetailView(generics.RetrieveUpdateDestroyAPIView):
 class PaymentGatewayListView(generics.ListCreateAPIView):
     queryset = PaymentGateway.objects.all()
     serializer_class = PaymentGatewaySerializer
-    #permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
@@ -225,7 +275,7 @@ class PaymentGatewayListView(generics.ListCreateAPIView):
 class PaymentGatewayDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = PaymentGateway.objects.all()
     serializer_class = PaymentGatewaySerializer
-    #permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         if getattr(self, 'swagger_fake_view', False):
@@ -236,19 +286,24 @@ class PaymentGatewayDetailView(generics.RetrieveUpdateDestroyAPIView):
 class TrackCreateView(generics.CreateAPIView):
     queryset = Track.objects.all()
     serializer_class = TrackSerializer
+    permission_classes = [IsAdminUser]
     
 class TrackListView(generics.ListAPIView):
     queryset = Track.objects.all()
     serializer_class = TrackSerializer
+    permission_classes = [IsAuthenticated]
     
 class TrackDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Track.objects.all()
     serializer_class = TrackSerializer
+    permission_classes = [IsAuthenticated]
     
 class TrackUpdateView(generics.UpdateAPIView):
     queryset = Track.objects.all()
     serializer_class = TrackSerializer
+    permission_classes = [IsAdminUser]
     
 class TrackDeleteView(generics.DestroyAPIView):
     queryset = Track.objects.all()
     serializer_class = TrackSerializer
+    permission_classes = [IsAdminUser]

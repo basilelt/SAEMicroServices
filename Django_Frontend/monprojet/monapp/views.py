@@ -112,35 +112,46 @@ def logout(request):
 
 def view_flights(request):
     api_url = get_api_url()
+    
+    token = request.session.get('auth_token')
+    
+    headers = {
+            'Authorization': f'Token {token}',
+        }
+    
+    
     flights_url = f'{api_url}flights/'
     airports_url = f'{api_url}airports/'
     planes_url = f'{api_url}planes/'
     tracks_url = f'{api_url}tracks/'
     
+    
+    
+    
     try:
         # Make API calls
-        flights_response = requests.get(flights_url).json()
+        flights_response = requests.get(flights_url, headers=headers).json()
         flight_details = []
         
         for flight in flights_response:
             plane = flight['plane']
-            plane_response = requests.get(f"{planes_url}{plane}").json()
+            plane_response = requests.get(f"{planes_url}{plane}", headers=headers).json()
             
             first_class_capacity = plane_response['first_class_capacity']
             second_class_capacity = plane_response['second_class_capacity']
 
             # Get track origin details
             track_origin = flight['track_origin']
-            track_origin_response = requests.get(f"{tracks_url}{track_origin}").json()
+            track_origin_response = requests.get(f"{tracks_url}{track_origin}", headers=headers).json()
             airport_origin_id = track_origin_response['airport']
-            airport_origin_response = requests.get(f"{airports_url}{airport_origin_id}").json()
+            airport_origin_response = requests.get(f"{airports_url}{airport_origin_id}", headers=headers).json()
             origin = airport_origin_response['location']
 
             # Get track destination details
             track_destination = flight['track_destination']
-            track_destination_response = requests.get(f"{tracks_url}{track_destination}").json()
+            track_destination_response = requests.get(f"{tracks_url}{track_destination}", headers=headers).json()
             airport_destination_id = track_destination_response['airport']
-            airport_destination_response = requests.get(f"{airports_url}{airport_destination_id}").json()
+            airport_destination_response = requests.get(f"{airports_url}{airport_destination_id}", headers=headers).json()
             destination = airport_destination_response['location']
             
             # Format departure and arrival times
@@ -164,8 +175,10 @@ def view_flights(request):
 
     except requests.exceptions.RequestException as e:
         logging.error(f"Request error: {e}")
+        return HttpResponse("An error occurred while fetching flight data.", status=500)
     except ValueError as e:
         logging.error(f"Value error: {e}")
+        return HttpResponse("An error occurred while processing flight data.", status=500)
 
 def book_flight(request, flight_id):
     if not request.user.is_authenticated:
