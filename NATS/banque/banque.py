@@ -3,15 +3,14 @@ import nats
 import pickle
 import os
 
-data_dir = "/banque/data"
+data_dir = "./data"
+if not os.path.exists(data_dir):
+    os.makedirs(data_dir)
 data_file = os.path.join(data_dir, "clients.pkl")
 
 def save_clients():
     with open(data_file, "wb") as f:
         pickle.dump(clients, f)
-
-if not os.path.exists(data_dir):
-    os.makedirs(data_dir)
 
 if os.path.exists(data_file):
     with open(data_file, "rb") as f:
@@ -137,7 +136,14 @@ async def handle_remboursement_request(msg):
 
 async def main():
     global nc
-    nc = await nats.connect("nats://192.168.164.130:4222")
+    env = os.getenv("DJANGO_ENVIRONMENT", "development")
+    user = os.getenv("NATS_USER", '')
+    password = os.getenv("NATS_PASSWORD", '')
+    if env == "development":
+        nc = await nats.connect("nats://localhost:4222", user=user, password=password)
+    else:
+        nc = await nats.connect("nats://nats:4222", user=user, password=password)
+        
     try:
         await nc.subscribe("banque.*.compte", cb=handle_account_request)
         await nc.subscribe("banque.creation", cb=handle_create_account_request)

@@ -74,6 +74,8 @@ services:
       dockerfile: ./Docker-test/NATS/banque/Dockerfile
     environment:
       DJANGO_ENVIRONMENT: ${DJANGO_ENVIRONMENT}
+      NATS_USER: ${NATS_USER}
+      NATS_PASSWORD: ${NATS_PASSWORD} 
     volumes:
       - banque:/app/data
     restart: unless-stopped
@@ -89,6 +91,8 @@ services:
       dockerfile: ./Docker-test/NATS/valid/Dockerfile
     environment:
       DJANGO_ENVIRONMENT: ${DJANGO_ENVIRONMENT}
+      NATS_USER: ${NATS_USER}
+      NATS_PASSWORD: ${NATS_PASSWORD}     
     volumes:
       - valid:/app/data
     restart: unless-stopped
