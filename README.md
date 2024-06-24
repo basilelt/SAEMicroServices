@@ -2,7 +2,7 @@
 
 Welcome to the SAEMicroServices project! This document provides an overview of how to set up and run the project in both development and production environments using Docker.
 
-## ACHTOUNG CRLF ON WINDOWS
+## ACHTUNG CRLF ON WINDOWS
 If you are using windows, you may encounter an issue with the line endings. To fix this, you can change the line ending of `.sh` files to LF. You can use the following command to do this:
 
 ```batch
