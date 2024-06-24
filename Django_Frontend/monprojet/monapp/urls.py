@@ -3,13 +3,11 @@ from . import views
 
 urlpatterns = [
     path('', views.home, name='home'),
-    path('create-client/', views.client_create_view, name='create-client'),
-    path('create-staff/', views.staff_create_view, name='create-staff'),
-    path('create-staff-type/', views.staff_type_create_view, name='create-staff-type'),
     path('register/', views.register, name='register'),
     path('login/', views.login, name='login'),
+    path('logout/', views.logout, name='logout'),
+    path('flights/', views.view_flights, name='flights'),
+    path('book-flight/<int:flight_id>/', views.book_flight, name='book_flight'),
     path('success/', views.success, name='success'),
-    path('view_staff/', views.view_staff, name='view_staff'),
-    path('view_clients/', views.view_clients, name='view_clients'),
-    path('view_staff_types/', views.view_staff_types, name='view_staff_types'),
+    path('book-flight/1/', views.book_flight, name='book_flight_test'),
 ]

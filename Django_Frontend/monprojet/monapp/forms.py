@@ -1,10 +1,7 @@
 # Django_Frontend/monprojet/monapp/forms.py
 from django import forms
-from .models import Client, Staff, StaffType
-
-from django import forms
 from django.contrib.auth.models import User
-from .models import Client, Staff, StaffType
+from .models import *
 
 class ClientForm(forms.ModelForm):
     class Meta:
@@ -36,3 +33,12 @@ class RegistrationForm(forms.ModelForm):
             client = Client(user=user)
             client.save()
         return user
+    
+class LoginForm(forms.Form):
+    username = forms.CharField(max_length=150)
+    password = forms.CharField(widget=forms.PasswordInput)
+    
+class BookingForm(forms.ModelForm):
+    class Meta:
+        model = Booking
+        fields = ['booking_type', 'client', 'flight']

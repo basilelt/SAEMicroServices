@@ -35,11 +35,11 @@ body {
     min-width: 160px;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
     z-index: 1;
+    display: none
 }
 
 .menu-content a {
-    display: none; /* Add this line to hide the menu by default */
-    position: absolute;
+    display: block;
     background-color: #f9f9f9;
     min-width: 160px;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
@@ -48,10 +48,6 @@ body {
 
 .menu-button:hover .menu-content, .menu-button:focus .menu-content {
     display: block;
-}
-
-h1 {
-    color: white;
 }
 
 main {

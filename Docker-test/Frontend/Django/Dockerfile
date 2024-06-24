@@ -1,5 +1,8 @@
 FROM python:3.12
 
+# Install PostgreSQL client
+RUN apt-get update && apt-get install -y postgresql-client && rm -rf /var/lib/apt/lists/*
+
 ADD ./Django_Frontend/ /app
 
 RUN set -ex \
@@ -12,6 +15,10 @@ WORKDIR /app/monprojet
 ENV VIRTUAL_ENV /env
 ENV PATH /env/bin:$PATH
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:80"]
+COPY ./Docker-test/Frontend/Django/populate_db_tables.sql /populate_db_tables.sql
+COPY ./Docker-test/Frontend/Django/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
 
 EXPOSE 80

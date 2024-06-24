@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 import os
+from datetime import timedelta
 from django.core.management.utils import get_random_secret_key
 
 # Determine the running environment
@@ -31,31 +32,36 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = get_random_secret_key()
 
 # SECURITY WARNING: don't run with debug turned on in production!
-if ENVIRONMENT == 'development' or ENVIRONMENT == 'test':
+if ENVIRONMENT != 'production':
     DEBUG = True
 else:
     DEBUG = False
     
-if ENVIRONMENT == 'development' or ENVIRONMENT == 'test':
+if ENVIRONMENT != 'production':
     ALLOWED_HOSTS = ['*']
 else:
-    ALLOWED_HOSTS = "api" + os.getenv('DOMAIN')
-
-
+    ALLOWED_HOSTS = [os.getenv('DOMAIN'), 'django-api']
 
 # Application definition
 
 INSTALLED_APPS = [
-    'rest_framework',
-    'api_common',
-    'drf_yasg',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'api_common',
+    'drf_yasg',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -67,8 +73,20 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-if ENVIRONMENT == 'production':
-    CSRF_TRUSTED_ORIGINS = "https://api." + os.getenv('DOMAIN')
+if ENVIRONMENT != 'production':
+    CSRF_TRUSTED_ORIGINS = [
+        "https://api." + os.getenv('DOMAIN', 'localhost'), 
+        'http://django-api',
+        'http://localhost:8000',
+        'http://127.0.0.1:8000',
+        'http://localhost:8010',
+        'http://127.0.0.1:8010',
+        ]
+else:
+    CSRF_TRUSTED_ORIGINS = [
+        "https://api." + os.getenv('DOMAIN'), 
+        'http://django-api',
+        ]
 
 ROOT_URLCONF = 'airline.urls'
 
@@ -88,7 +106,7 @@ TEMPLATES = [
     },
 ]
 
-if ENVIRONMENT == 'development' or ENVIRONMENT == 'test':
+if ENVIRONMENT != 'production':
     WSGI_APPLICATION = 'airline.wsgi.application'
 else:
     ASGI_APPLICATION = 'airline.asgi.application'
@@ -97,7 +115,7 @@ else:
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-if ENVIRONMENT == 'test' or ENVIRONMENT == 'production':
+if ENVIRONMENT != 'development':
     # Use PostgreSQL for production
     DATABASES = {
         'default': {
@@ -161,6 +179,15 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-CORS_ORIGIN_WHITELIST = [
-    "http://localhost:8010",
-]
+if ENVIRONMENT != 'production':
+    CORS_ORIGIN_WHITELIST = [
+        "https://" + os.getenv('DOMAIN', 'localhost'), 
+        'http://django-frontend',
+        'http://localhost:8000',
+        'http://127.0.0.1:8000'
+        ]
+else:
+    CORS_ORIGIN_WHITELIST = [
+        "https://" + os.getenv('DOMAIN'), 
+        'http://django-frontend'
+        ]
