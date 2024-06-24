@@ -30,11 +30,11 @@ class ObtainAuthToken(APIView):
         if user:
             token, created = Token.objects.get_or_create(user=user)
             return Response({'token': token.key})
-            banque_account_create()
+            self.banque_account_create(Client.user.id)
         else:
             return Response({'error': 'Invalid Credentials'}, status=status.HTTP_400_BAD_REQUEST)
 
-    async def banque_account_create(self, request):
+    async def banque_account_create(self, user_id_bank):
         global nc
         env = os.getenv('DJANGO_ENVIRONMENT', 'development')
         user = os.getenv('NATS_USER', '')
@@ -325,15 +325,38 @@ class CancellationRequestDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 class PaymentView(APIView):
     permission_classes = [IsAuthenticated]
-
+    
+    async def valid_payment(self, user_reserv, price_seat):
+        global nc
+        env = os.getenv('DJANGO_ENVIRONMENT', 'development')
+        user = os.getenv('NATS_USER', '')
+        password = os.getenv('NATS_PASSWORD', '')
+        if env == 'development':
+            nc = await nats.connect("nats://localhost:4222")
+        else:
+            nc = await nats.connect("nats://nats:4222",user=user,password=password)
+        try:
+            client = user_reserv
+            if payment == "True":
+                response = await nc.request(f"banque.validation.{client}",str(price_seat),timeout=10)                
+                response_data = response.data.decode()
+                data = response_data.split(",")
+                payment=data[0]
+                if payment == "True":
+                    return True
+                else:
+                    return False
+        except Exception as e:  
+            print(e)
+    
     def post(self, request, *args, **kwargs):
         booking_id = request.data.get('booking_id')
         booking = get_object_or_404(Booking, id=booking_id)
         client_id = booking.client.id
         client = get_object_or_404(User, id=client_id)
-        
+        price_seat = booking.booking_type.price
         # Simulate payment process. In a real scenario, you would integrate with a payment gateway.
-        payment_successful = True  # This should be replaced with actual payment verification logic
+        payment_successful = self.valid_payment(client_id,price_seat)  # This should be replaced with actual payment verification logic
 
         if payment_successful:
             booking.status = 'confirmed'
@@ -351,7 +374,8 @@ class PaymentView(APIView):
             return Response({'status': 'Payment successful and booking confirmed'}, status=status.HTTP_200_OK)
         else:
             return Response({'error': 'Payment failed'}, status=status.HTTP_400_BAD_REQUEST)
-
+      
+    
 # new-2
 class PaymentGatewayListView(generics.ListCreateAPIView):
     queryset = PaymentGateway.objects.all()
@@ -374,34 +398,17 @@ class PaymentGatewayDetailView(generics.RetrieveUpdateDestroyAPIView):
         user = self.request.user
         return PaymentGateway.objects.filter(transaction__client=user, pk=self.kwargs.get('pk'))
 
-    async def valid_payment(self):
-        global nc
-        env = os.getenv('DJANGO_ENVIRONMENT', 'development')
-        user = os.getenv('NATS_USER', '')
-        password = os.getenv('NATS_PASSWORD', '')
-        if env == 'development':
-            nc = await nats.connect("nats://localhost:4222")
-        else:
-            nc = await nats.connect("nats://nats:4222",user=user,password=password)
-        try:
-            client = self.request.user
-            flight_reserv = Flight.plane.second_class_capacity.get(id='flight') + Flight.plane.first_class_capacity.get(id='flight')
-            seat = self.request.Flight.objects.get(id=self.kwargs.get('pk')).Plane.second_class_capacity + self.request.Flight.objects.get(id=self.kwargs.get('pk')).Flight.Plane.first_class_capacity
-            response = await nc.request(f"banque.validation.{client}",timeout=10)
-            response_data = response.data.decode()
-            data = response_data.split(",")
-            payment=data[0]
-            if payment == "True":
-                response = await nc.request(f"validation.reservation.place.client",f"{flight_reserv} : {seat}",timeout=10)
-                response_data = response.data.decode()
-                data = response_data.split(",")
-                payment=data[0]
-                if payment == "True":
-                    return Response({'status': 'Payment successful'}, status=status.HTTP_200_OK)
-                else:
-                    return Response({'error': 'Payment failed'}, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:  
-            print(e)
+    
+
+    async def create(self, request):
+        # Call the valid_payment function here
+        await self.valid_payment(request.data['user_reserv'], request.data['flight_id_reserv'], request.data['price_seat'])
+        
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 class TrackCreateView(generics.CreateAPIView):
     queryset = Track.objects.all()
