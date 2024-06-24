@@ -46,3 +46,12 @@ class BookingForm(forms.ModelForm):
 class PaymentForm(forms.Form):
     booking_id = forms.IntegerField(widget=forms.HiddenInput())
     # Add other fields as required by your payment method
+    
+class CancellationRequestForm(forms.ModelForm):
+    class Meta:
+        model = CancellationRequest
+        fields = ['booking', 'reason']
+        widgets = {'booking': forms.HiddenInput()}  # Hide this field if set automatically
+
+class CancellationReviewForm(forms.Form):
+    status = forms.ChoiceField(choices=[('approved', 'Approve'), ('rejected', 'Reject')])
