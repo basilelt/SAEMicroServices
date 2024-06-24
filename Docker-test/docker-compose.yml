@@ -37,7 +37,22 @@ services:
     hostname: pgadmin
     depends_on:
       - db
-      
+
+#  db_dump:
+#    image: postgres:16.3
+#    depends_on:
+#      - db
+#    volumes:
+#      - ./DB/dumps:/dumps
+#    environment:
+#      POSTGRES_DB: ${POSTGRES_DB}
+#      POSTGRES_USER: ${POSTGRES_USER}
+#      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+#    command: >
+#      bash -c "export PGPASSWORD=${POSTGRES_PASSWORD} && sleep 10 && pg_dump -h db -p 5432 -d ${POSTGRES_DB} -U ${POSTGRES_USER} -s -F p -E UTF-8 -f /dumps/db_dump.sql && touch /dumps/dump.log"
+#    networks:
+#      - proxy
+    
   nats:
     image: nats:2.10
     volumes:
@@ -52,6 +67,40 @@ services:
     ports:
       - "4222:4222"
     hostname: nats
+
+  banque:
+    build:
+      context: ../
+      dockerfile: ./Docker-test/NATS/banque/Dockerfile
+    environment:
+      DJANGO_ENVIRONMENT: ${DJANGO_ENVIRONMENT}
+      NATS_USER: ${NATS_USER}
+      NATS_PASSWORD: ${NATS_PASSWORD} 
+    volumes:
+      - banque:/app/data
+    restart: unless-stopped
+    networks:
+      - proxy
+    hostname: banque
+    depends_on:
+      - nats
+
+  valid:
+    build:
+      context: ../
+      dockerfile: ./Docker-test/NATS/valid/Dockerfile
+    environment:
+      DJANGO_ENVIRONMENT: ${DJANGO_ENVIRONMENT}
+      NATS_USER: ${NATS_USER}
+      NATS_PASSWORD: ${NATS_PASSWORD}     
+    volumes:
+      - valid:/app/data
+    restart: unless-stopped
+    networks:
+      - proxy
+    hostname: valid
+    depends_on:
+      - nats
 
   django_api:
     build:
@@ -81,7 +130,8 @@ services:
       - "traefik.http.services.django_api.loadbalancer.server.url=http://django_api:80"
     hostname: django-api
     depends_on:
-      - nats
+      - banque
+      - valid
 
   django_frontend:
     build: 
@@ -154,6 +204,8 @@ services:
 volumes:
   db:
   pgadmin:
+  banque:
+  valid:
   certs:
 
 networks:

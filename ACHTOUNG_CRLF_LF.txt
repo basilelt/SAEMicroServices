@@ -1,1 +1,0 @@
-Windows de mort et son CRLF, changer scripts.sh en LF plutôt que CRLF

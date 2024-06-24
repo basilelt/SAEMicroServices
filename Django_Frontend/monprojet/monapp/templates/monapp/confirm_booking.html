@@ -1,0 +1,12 @@
+{% extends 'monapp/base.html' %}
+{% block content %}
+<h1>Confirm Booking</h1>
+<form method="post">
+    {% csrf_token %}
+    <p>Are you sure you want to confirm booking #{{ booking.id }}?</p>
+    <p>Flight: {{ flight.name }} - Origin: {{ flight.origin }} - Destination: {{ flight.destination }}</p>
+    <p>Departure: {{ flight.departure }} - Arrival: {{ flight.arrival }}</p>
+    <p>Seat Class: {{ booking.get_booking_type_display }} - Price: {{ flight.price }}</p>
+    <button type="submit">Confirm</button>
+</form>
+{% endblock %}

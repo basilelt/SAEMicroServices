@@ -1,3 +1,9 @@
 .gitignore
 README.md
+readme.md
 .DS_Store
+test.py
+banque_interface.py
+client.py
+diplay.py
+empty_db.sql

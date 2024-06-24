@@ -2,6 +2,27 @@
 
 Welcome to the SAEMicroServices project! This document provides an overview of how to set up and run the project in both development and production environments using Docker.
 
+## ACHTUNG CRLF ON WINDOWS
+If you are using windows, you may encounter an issue with the line endings. To fix this, you can change the line ending of `.sh` files to LF. You can use the following script to do this:
+
+```batch
+@echo off
+setlocal enabledelayedexpansion
+set "rootDir=."
+
+:: Loop through all .sh files in the directory and its subdirectories
+for /r "%rootDir%" %%f in (*.sh) do (
+    :: Use 'type' command to display the file content and redirect output to a temporary file with Unix line endings (LF)
+    type "%%f" | findstr /v /r "^$" > "%%f.tmp"
+    
+    move /y "%%f.tmp" "%%f" >nul
+)
+
+echo Conversion to LF completed.
+endlocal
+```
+
+
 ## Development Environment Setup
 
 ### Docker-Test Environment
@@ -31,6 +52,8 @@ This will build and start all the necessary containers for the development envir
 - **Django API**: Accessible at `https://api.your-domain/api/common`
 - **Frontend**: Accessible at `https://your-domain`
 - **PgAdmin**: Accessible at `https://pgadmin.your-domain`
+
+Edit and use the `hosts.sh` or `hosts.bat` script (as admin or sudo) to add the domain to your hosts file if it's a local setup.
 
 `your-domain` should be set under the ENV variable `DOMAIN`.
 
@@ -66,6 +89,8 @@ This will build and start all the necessary containers for the production enviro
 - **Django API**: Accessible at `https://api.your-domain/api/common`
 - **Frontend**: Accessible at `https://your-domain`
 
+Edit and use the `hosts.sh` or `hosts.bat` script (as admin or sudo) to add the domain to your hosts file if it's a local setup.
+
 `your-domain` should be set under the ENV variable `DOMAIN`.
 
 ## Additional Notes
@@ -75,3 +100,9 @@ This will build and start all the necessary containers for the production enviro
 - The project uses NATS for messaging, Postgres for the database, and Django for both the API and frontend in development. Adjustments may be necessary based on your specific requirements (as an example, you may use real certificates for the production environment).
 
 For more information on the individual components, refer to the README files located in their respective directories.
+
+## Architecture
+![Docker Architecture](./readme_files/architecture.png "Docker Architecture Diagram")
+
+## Database Architecture
+![Database Architecture](./readme_files/architecture_db.svg "Database Architecture Diagram")
