@@ -20,7 +20,7 @@ urlpatterns = [
     path('bookings/add/', BookingListView.as_view(), name='add-booking'),  # Utiliser la même vue, ajouter une route
     path('bookings/update/<int:pk>/', BookingDetailView.as_view(), name='update-booking'),  # Utiliser la même vue, ajouter une route
     path('bookings/delete/<int:pk>/', BookingDetailView.as_view(), name='delete-booking'),  # Utiliser la même vue, ajouter une route
-    path('bookings/confirm/', ConfirmBookingView.as_view(), name='confirm-booking'),  # new-2
+    #path('bookings/confirm/', ConfirmBookingView.as_view(), name='confirm-booking'),  # new-2
 
     # Gestion des transactions
     path('transactions/', TransactionListView.as_view(), name='transaction-list'),
@@ -66,4 +66,6 @@ urlpatterns = [
 
     # Toutes les réservations
     path('all-bookings/', AllBookingsListView.as_view(), name='all-bookings-list'),
+    
+    path('payment/', PaymentView.as_view(), name='payment'),
 ]
