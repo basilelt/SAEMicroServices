@@ -176,7 +176,12 @@ def book_flight(request, flight_id):
 
     if request.method == 'POST':
         booking_type = request.POST.get('booking_type')
-        logging.info(f'Booking type: {booking_type}')
+        try:
+            booking_type = int(booking_type)
+            booking_type= BookingType.objects.get(id=booking_type)
+        except (ValueError, BookingType.DoesNotExist):
+            return HttpResponse('Invalid booking type. Please select a valid booking type.', status=400)
+
 
         headers = {
             'Authorization': f'Token {token}',
@@ -184,15 +189,14 @@ def book_flight(request, flight_id):
         }
 
         data = {
-            'client_id': request.user.client.id,
-            'booking_type': booking_type,
+            'client_id': request.user.id,
+            'booking_type': booking_type.type,
             'flight': flight_id,
         }
 
         try:
             logging.info(f'Sending POST request to {api_url} with headers {headers} and data {data}')
             response = requests.post(api_url, headers=headers, json=data)
-            logging.info(f'Response Status: {response.status_code}, Headers: {response.headers}, Body: {response.text}')
 
             if response.status_code == 201:
                 return redirect('success')
