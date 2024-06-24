@@ -28,23 +28,24 @@ class ObtainAuthToken(APIView):
         password = request.data.get('password')
         user = authenticate(username=username, password=password)
         if user:
+            user_id_bank = user.client.id
             token, created = Token.objects.get_or_create(user=user)
+            asyncio.run(self.banque_account_create(user_id_bank))
             return Response({'token': token.key})
-            self.banque_account_create(Client.user.id)
         else:
             return Response({'error': 'Invalid Credentials'}, status=status.HTTP_400_BAD_REQUEST)
 
     async def banque_account_create(self, user_id_bank):
         global nc
         env = os.getenv('DJANGO_ENVIRONMENT', 'development')
-        user = os.getenv('NATS_USER', '')
-        password = os.getenv('NATS_PASSWORD', '')
+        user = os.getenv('NATS_USER', 'user')
+        password = os.getenv('NATS_PASSWORD', 'password')
         if env == 'development':
             nc = await nats.connect("nats://localhost:4222")
         else:
             nc = await nats.connect("nats://nats:4222",user=user,password=password)
         try:
-            response = await nc.request(f"banque.creation",f"{request.data.get('username')}:1000",timeout=10)
+            response = await nc.request(f"banque.creation",f"{str(user_id_bank)}:1000",timeout=10)
             response_data = response.data.decode()
             data = response_data.split(",")
             status=data[0]
@@ -329,8 +330,8 @@ class PaymentView(APIView):
     async def valid_payment(self, user_reserv, price_seat):
         global nc
         env = os.getenv('DJANGO_ENVIRONMENT', 'development')
-        user = os.getenv('NATS_USER', '')
-        password = os.getenv('NATS_PASSWORD', '')
+        user = os.getenv('NATS_USER', 'user')
+        password = os.getenv('NATS_PASSWORD', 'password')
         if env == 'development':
             nc = await nats.connect("nats://localhost:4222")
         else:
@@ -338,7 +339,7 @@ class PaymentView(APIView):
         try:
             client = user_reserv
             if payment == "True":
-                response = await nc.request(f"banque.validation.{client}",str(price_seat),timeout=10)                
+                response = await nc.request(f"banque.validation.{client}", str(price_seat), timeout=10)   
                 response_data = response.data.decode()
                 data = response_data.split(",")
                 payment=data[0]
@@ -356,7 +357,7 @@ class PaymentView(APIView):
         client = get_object_or_404(User, id=client_id)
         price_seat = booking.booking_type.price
         # Simulate payment process. In a real scenario, you would integrate with a payment gateway.
-        payment_successful = self.valid_payment(client_id,price_seat)  # This should be replaced with actual payment verification logic
+        payment_successful = asyncio.run(self.valid_payment(client_id,price_seat))  # This should be replaced with actual payment verification logic
 
         if payment_successful:
             booking.status = 'confirmed'
@@ -374,7 +375,6 @@ class PaymentView(APIView):
             return Response({'status': 'Payment successful and booking confirmed'}, status=status.HTTP_200_OK)
         else:
             return Response({'error': 'Payment failed'}, status=status.HTTP_400_BAD_REQUEST)
-      
     
 # new-2
 class PaymentGatewayListView(generics.ListCreateAPIView):
