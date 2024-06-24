@@ -202,8 +202,8 @@ SELECT flight_number, departure::timestamp with time zone, arrival::timestamp wi
 ) AS subquery;
 
 -- Insert booking_types
-INSERT INTO booking_type (type)
-SELECT type FROM (
+INSERT INTO booking_type (type, price)
+SELECT type, price FROM (
     SELECT 'Second Class' AS type, 100 AS price
     WHERE NOT EXISTS (SELECT 1 FROM booking_type WHERE type = 'Second Class')
     UNION ALL
