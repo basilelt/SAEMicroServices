@@ -233,21 +233,21 @@ class DeleteFlightView(generics.DestroyAPIView):
         except Exception as e:  
             print(e)
 
-class ConfirmBookingView(APIView):
-    permission_classes = [IsAdminUser]
-
-    def post(self, request, *args, **kwargs):
-        booking_id = request.data.get('booking_id')
-        try:
-            booking = Booking.objects.get(id=booking_id)
-            if booking.status == 'pending':
-                booking.status = 'confirmed'
-                booking.save()
-                return Response({'status': 'Booking confirmed'}, status=status.HTTP_200_OK)
-            else:
-                return Response({'error': 'Booking is not in a pending state'}, status=status.HTTP_400_BAD_REQUEST)
-        except Booking.DoesNotExist:
-            return Response({'error': 'Booking not found'}, status=status.HTTP_404_NOT_FOUND)
+#class ConfirmBookingView(APIView):
+#    permission_classes = [IsAdminUser]
+#
+#    def post(self, request, *args, **kwargs):
+#        booking_id = request.data.get('booking_id')
+#        try:
+#            booking = Booking.objects.get(id=booking_id)
+#            if booking.status == 'pending':
+#                booking.status = 'confirmed'
+#                booking.save()
+#                return Response({'status': 'Booking confirmed'}, status=status.HTTP_200_OK)
+#            else:
+#                return Response({'error': 'Booking is not in a pending state'}, status=status.HTTP_400_BAD_REQUEST)
+#        except Booking.DoesNotExist:
+#            return Response({'error': 'Booking not found'}, status=status.HTTP_404_NOT_FOUND)
 
 class AddAirportView(generics.CreateAPIView):
     queryset = Airport.objects.all()
@@ -322,6 +322,35 @@ class CancellationRequestDetailView(generics.RetrieveUpdateDestroyAPIView):
             return CancellationRequest.objects.none()
         user = self.request.user
         return CancellationRequest.objects.filter(client=user, pk=self.kwargs.get('pk'))
+
+class PaymentView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        booking_id = request.data.get('booking_id')
+        booking = get_object_or_404(Booking, id=booking_id)
+        client_id = booking.client.id
+        client = get_object_or_404(User, id=client_id)
+        
+        # Simulate payment process. In a real scenario, you would integrate with a payment gateway.
+        payment_successful = True  # This should be replaced with actual payment verification logic
+
+        if payment_successful:
+            booking.status = 'confirmed'
+            booking.save()
+            
+            # Create a new Transaction instance
+            transaction = Transaction(
+                client=client,
+                amount=100.00,  # Replace with actual amount
+                status='completed',
+                booking=booking
+            )
+            transaction.save()
+
+            return Response({'status': 'Payment successful and booking confirmed'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'Payment failed'}, status=status.HTTP_400_BAD_REQUEST)
 
 # new-2
 class PaymentGatewayListView(generics.ListCreateAPIView):
