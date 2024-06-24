@@ -66,4 +66,6 @@ urlpatterns = [
 
     # Toutes les réservations
     path('all-bookings/', AllBookingsListView.as_view(), name='all-bookings-list'),
+    
+    path('payment/<int:pk>/', PaymentGatewayDetailView.as_view(), name='payment-detail'),
 ]

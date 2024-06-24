@@ -127,7 +127,7 @@ class CancellationRequest(models.Model):
     flight = models.ForeignKey(Flight, on_delete=models.CASCADE)  # Consider removing if not needed
     booking = models.ForeignKey(Booking, on_delete=models.CASCADE)  # Add this line
     request_date = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('approved', 'Approved'), ('rejected', 'Rejected')])
+    status = models.CharField(max_length=20, default='pending', choices=[('pending', 'Pending'), ('approved', 'Approved'), ('rejected', 'Rejected')])
     reason = models.TextField(null=True, blank=True)
 
     class Meta:
