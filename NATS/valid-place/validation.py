@@ -49,6 +49,23 @@ async def handle_create_vol(msg):
 
     await nc.publish(reply, response.encode())
 
+async def handle_delete_vol(msg):
+    subject = msg.subject
+    reply = msg.reply
+    data = msg.data.decode()
+    try:
+        name, place = data.split(":")
+        place = int(place)
+        if name in vol:
+            vol[name].pop()
+            response = f"vol supprimé."
+            save_vol()
+    except Exception as e:
+        response = f"Erreur lors de la création du vol: {str(e)}"
+        print(response)
+
+    await nc.publish(reply, response.encode())
+
 async def handle_place_validation(msg):
     subject = msg.subject
     reply = msg.reply
@@ -110,11 +127,11 @@ async def vol_request():
 async def main():
     global nc
     nc = await nats.connect("nats://192.168.164.130:4222")
-    vol_request
     try:
         await nc.subscribe("validation.reservation.place.client", cb=handle_place_validation)
         await nc.subscribe("validation.remboursement.place.client.*", cb=handle_place_devalidation)
         await nc.subscribe("vol.creation", cb=handle_create_vol)
+        await nc.subscribe("vol.delete", cb=handle_delete_vol)
         while True:
             await asyncio.sleep(1)
     except asyncio.CancelledError:

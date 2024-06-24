@@ -13,6 +13,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import NotAuthenticated
 import asyncio
 import nats
+import os
+
 
 class ObtainAuthToken(APIView):
     permission_classes = [AllowAny]
@@ -24,9 +26,31 @@ class ObtainAuthToken(APIView):
         if user:
             token, created = Token.objects.get_or_create(user=user)
             return Response({'token': token.key})
+            banque_account_create()
         else:
             return Response({'error': 'Invalid Credentials'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
+    async def banque_account_create(self, request):
+        global nc
+        env = os.getenv('DJANGO_ENVIRONMENT', 'development')
+        user = os.getenv('NATS_USER', '')
+        password = os.getenv('NATS_PASSWORD', '')
+        if env == 'development':
+            nc = await nats.connect("nats://localhost:4222")
+        else:
+              nc = await nats.connect("nats://nats:4222",user=user,password=password)
+        try:
+            response = await nc.request(f"banque.creation",f"{request.data.get('username')}:1000",timeout=10)
+            response_data = response.data.decode()
+            data = response_data.split(",")
+            status=data[0]
+            if status == "True":
+                return Response({'status': 'Account created'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'error': 'Account creation failed'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:  
+            print(e)
+
 class UserListView(generics.ListCreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -112,6 +136,21 @@ class AddFlightView(generics.CreateAPIView):
     serializer_class = FlightSerializer
     permission_classes = [IsAdminUser]
 
+    async def vol_cretion(self):
+        global nc
+        env = os.getenv('DJANGO_ENVIRONMENT', 'development')
+        user = os.getenv('NATS_USER', '')
+        password = os.getenv('NATS_PASSWORD', '')
+        if env == 'development':
+            nc = await nats.connect("nats://localhost:4222")
+        else:
+              nc = await nats.connect("nats://nats:4222",user=user,password=password) 
+        try:
+            flight_creation = f"{Flight.objects.get(id=self.kwargs.get('pk'))} : {Flight.objects.get(Plane.second_class_capacity.get(id='flight')) + Flight.objects.get(Plane.first_class_capacity.get(id='flight'))}"  
+            await nc.publish(f"vol.creation",flight_creation)
+        except Exception as e:
+            print(e)
+        
 class UpdateFlightView(generics.UpdateAPIView):
     queryset = Flight.objects.all()
     serializer_class = FlightSerializer
@@ -121,6 +160,21 @@ class DeleteFlightView(generics.DestroyAPIView):
     queryset = Flight.objects.all()
     serializer_class = FlightSerializer
     permission_classes = [IsAdminUser]
+
+    async def vol_delete():
+        global nc
+        env = os.getenv('DJANGO_ENVIRONMENT', 'development')
+        user = os.getenv('NATS_USER', '')
+        password = os.getenv('NATS_PASSWORD', '')
+        if env == 'development':
+            nc = await nats.connect("nats://localhost:4222")
+        else:
+              nc = await nats.connect("nats://nats:4222",user=user,password=password)
+        try:
+            flidht_delete = f"{Flight.objects.get(id=self.kwargs.get('pk'))} : {Flight.objects.get(Plane.second_class_capacity.get(id='flight')) + Flight.objects.get(Plane.first_class_capacity.get(id='flight'))}"
+            await nc.publish(f"vol.delete",flidht_delete)
+        except Exception as e:  
+            print(e)
 
 class ConfirmBookingView(APIView):
     permission_classes = [IsAdminUser]
@@ -238,19 +292,30 @@ class PaymentGatewayDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     async def valid_payment(self):
         global nc
-        nc = await nats.connect("nats://192.168.164.130:4222")
+        env = os.getenv('DJANGO_ENVIRONMENT', 'development')
+        user = os.getenv('NATS_USER', '')
+        password = os.getenv('NATS_PASSWORD', '')
+        if env == 'development':
+            nc = await nats.connect("nats://localhost:4222")
+        else:
+            nc = await nats.connect("nats://nats:4222",user=user,password=password)
         try:
             client = self.request.user
-            flight_reserv = self.request.Flight.objects.get(id=self.kwargs.get('pk'))
-            seat = self.request.Flight.objects.get(Plane.objects.get(id=flight_reserv.plane_id).second_class_capacity)+self.request.Flight.objects.get(Plane.objects.get(id=flight_reserv.plane_id).first_class_capacity)
+            flight_reserv = Flight.plane.second_class_capacity.get(id='flight') + Flight.plane.first_class_capacity.get(id='flight')
+            seat = self.request.Flight.objects.get(id=self.kwargs.get('pk')).Plane.second_class_capacity + self.request.Flight.objects.get(id=self.kwargs.get('pk')).Flight.Plane.first_class_capacity
             response = await nc.request(f"banque.validation.{client}",timeout=10)
             response_data = response.data.decode()
             data = response_data.split(",")
             payment=data[0]
             if payment == "True":
                 response = await nc.request(f"validation.reservation.place.client",f"{flight_reserv} : {seat}",timeout=10)
+                response_data = response.data.decode()
                 data = response_data.split(",")
                 payment=data[0]
+                if payment == "True":
+                    return Response({'status': 'Payment successful'}, status=status.HTTP_200_OK)
+                else:
+                    return Response({'error': 'Payment failed'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:  
             print(e)
 
