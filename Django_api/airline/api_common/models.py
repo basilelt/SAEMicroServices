@@ -117,7 +117,7 @@ class Booking(models.Model):
     booking_type = models.ForeignKey(BookingType, on_delete=models.CASCADE)
     client = models.ForeignKey(User, on_delete=models.CASCADE)
     flight = models.ForeignKey(Flight, on_delete=models.CASCADE)
-    status = models.CharField(max_length=20, default='pending')
+    status = models.CharField(max_length=20, default='pending', choices=[('pending', 'Pending'), ('confirmed', 'Confirmed'), ('cancelled', 'Cancelled')])
 
     class Meta:
         db_table = 'booking'
@@ -142,8 +142,9 @@ class Transaction(models.Model):
 class CancellationRequest(models.Model):
     client = models.ForeignKey(User, on_delete=models.CASCADE)
     flight = models.ForeignKey(Flight, on_delete=models.CASCADE)
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
     request_date = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('approved', 'Approved'), ('rejected', 'Rejected')])
+    status = models.CharField(max_length=20, default='pending', choices=[('pending', 'Pending'), ('approved', 'Approved'), ('rejected', 'Rejected')])
     reason = models.TextField(null=True, blank=True)
 
     class Meta:

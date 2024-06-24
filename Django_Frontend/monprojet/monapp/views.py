@@ -119,15 +119,11 @@ def view_flights(request):
             'Authorization': f'Token {token}',
         }
     
-    
     flights_url = f'{api_url}flights/'
     airports_url = f'{api_url}airports/'
     planes_url = f'{api_url}planes/'
     tracks_url = f'{api_url}tracks/'
-    
-    
-    
-    
+
     try:
         # Make API calls
         flights_response = requests.get(flights_url, headers=headers).json()
@@ -227,7 +223,7 @@ def payment(request, booking_id):
         if form.is_valid():
             # Process payment here
             # On successful payment:
-            return redirect('confirm_booking', booking_id=booking.id)
+            return redirect('success')
     else:
         form = PaymentForm(initial={'booking_id': booking_id})
     return render(request, 'monapp/payment.html', {'form': form, 'booking': booking})
@@ -266,3 +262,35 @@ def confirm_booking(request, booking_id):
         context = {'booking': booking, 'flight': flight}
         return render(request, 'monapp/confirm_booking.html', context)
     
+    
+def submit_cancellation_request(request, booking_id):
+    booking = Booking.objects.get(id=booking_id)
+    if request.method == 'POST':
+        form = CancellationRequestForm(request.POST)
+        if form.is_valid():
+            cancellation_request = form.save(commit=False)
+            cancellation_request.client = request.user
+            cancellation_request.flight = booking.flight  # Set the flight attribute
+            cancellation_request.save()
+            return redirect('success')
+    else:
+        form = CancellationRequestForm(initial={'booking': booking})
+    return render(request, 'monapp/cancel_review.html', {'form': form})
+
+
+def review_cancellation_request(request, request_id):
+    cancellation_request = CancellationRequest.objects.get(id=request_id)
+    if request.method == 'POST':
+        form = CancellationReviewForm(request.POST)
+        if form.is_valid():
+            status = form.cleaned_data['status']
+            cancellation_request.status = status
+            if status == 'approved':
+                booking = cancellation_request.booking
+                booking.status = 'cancelled'
+                booking.save()
+            cancellation_request.save()
+            return redirect('some_view_name')
+    else:
+        form = CancellationReviewForm()
+    return render(request, 'your_review_template_name.html', {'form': form})
