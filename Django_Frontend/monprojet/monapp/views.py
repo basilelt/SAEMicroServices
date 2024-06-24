@@ -176,11 +176,7 @@ def book_flight(request, flight_id):
 
     if request.method == 'POST':
         booking_type = request.POST.get('booking_type')
-        try:
-            booking_type = int(booking_type)
-            booking_type= BookingType.objects.get(id=booking_type)
-        except (ValueError, BookingType.DoesNotExist):
-            return HttpResponse('Invalid booking type. Please select a valid booking type.', status=400)
+        booking_type = int(booking_type)
 
 
         headers = {
@@ -190,7 +186,7 @@ def book_flight(request, flight_id):
 
         data = {
             'client_id': request.user.id,
-            'booking_type': booking_type.type,
+            'booking_type': booking_type,
             'flight': flight_id,
         }
 

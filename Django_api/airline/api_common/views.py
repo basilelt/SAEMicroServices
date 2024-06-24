@@ -2,14 +2,14 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
 from django.core.exceptions import ValidationError
+from django.shortcuts import get_object_or_404
 from .models import *
 from .serializers import *
-from django.contrib.auth import authenticate
-from rest_framework.authtoken.models import Token
-from rest_framework.permissions import AllowAny
 
 class ObtainAuthToken(APIView):
     permission_classes = (AllowAny,)
@@ -56,8 +56,9 @@ class BookingListView(generics.ListCreateAPIView):
     def create(self, request):
         data = request.data
         flight = Flight.objects.get(id=data['flight'])
-        # Assuming 'client' is a field in 'Booking' model that refers to the user
-        booking_type = data.get('booking_type')  # Provide a value for booking_type
+        booking_type_id = data.get('booking_type')  # Expecting an ID for booking_type
+        booking_type = get_object_or_404(BookingType, id=booking_type_id)
+
         booking = Booking.objects.create(
             client=request.user,
             booking_type=booking_type,
