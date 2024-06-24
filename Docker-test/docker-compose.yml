@@ -37,7 +37,22 @@ services:
     hostname: pgadmin
     depends_on:
       - db
-      
+
+#  db_dump:
+#    image: postgres:16.3
+#    depends_on:
+#      - db
+#    volumes:
+#      - ./DB/dumps:/dumps
+#    environment:
+#      POSTGRES_DB: ${POSTGRES_DB}
+#      POSTGRES_USER: ${POSTGRES_USER}
+#      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+#    command: >
+#      bash -c "export PGPASSWORD=${POSTGRES_PASSWORD} && sleep 10 && pg_dump -h db -p 5432 -d ${POSTGRES_DB} -U ${POSTGRES_USER} -s -F p -E UTF-8 -f /dumps/db_dump.sql && touch /dumps/dump.log"
+#    networks:
+#      - proxy
+    
   nats:
     image: nats:2.10
     volumes:
@@ -154,6 +169,7 @@ services:
 volumes:
   db:
   pgadmin:
+  dumps:
   certs:
 
 networks:

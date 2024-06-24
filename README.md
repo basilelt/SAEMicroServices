@@ -75,3 +75,9 @@ This will build and start all the necessary containers for the production enviro
 - The project uses NATS for messaging, Postgres for the database, and Django for both the API and frontend in development. Adjustments may be necessary based on your specific requirements (as an example, you may use real certificates for the production environment).
 
 For more information on the individual components, refer to the README files located in their respective directories.
+
+## Architecture
+![Docker Architecture](./readme_files/architecture.png "Docker Architecture Diagram")
+
+## Database Architecture
+![Database Architecture](./readme_files/architecture_db.svg "Database Architecture Diagram")
