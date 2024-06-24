@@ -2,6 +2,27 @@
 
 Welcome to the SAEMicroServices project! This document provides an overview of how to set up and run the project in both development and production environments using Docker.
 
+## ACHTOUNG CRLF ON WINDOWS
+If you are using windows, you may encounter an issue with the line endings. To fix this, you can change the line ending of `.sh` files to LF. You can use the following command to do this:
+
+```batch
+@echo off
+setlocal enabledelayedexpansion
+set "rootDir=."
+
+:: Loop through all .sh files in the directory and its subdirectories
+for /r "%rootDir%" %%f in (*.sh) do (
+    :: Use 'type' command to display the file content and redirect output to a temporary file with Unix line endings (LF)
+    type "%%f" | findstr /v /r "^$" > "%%f.tmp"
+    
+    move /y "%%f.tmp" "%%f" >nul
+)
+
+echo Conversion to LF completed.
+endlocal
+```
+
+
 ## Development Environment Setup
 
 ### Docker-Test Environment
