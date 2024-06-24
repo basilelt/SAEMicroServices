@@ -32,6 +32,8 @@ This will build and start all the necessary containers for the development envir
 - **Frontend**: Accessible at `https://your-domain`
 - **PgAdmin**: Accessible at `https://pgadmin.your-domain`
 
+Edit and use the `hosts.sh` or `hosts.bat` script (as admin or sudo) to add the domain to your hosts file if it's a local setup.
+
 `your-domain` should be set under the ENV variable `DOMAIN`.
 
 ## Production Environment Setup
@@ -65,6 +67,8 @@ This will build and start all the necessary containers for the production enviro
 
 - **Django API**: Accessible at `https://api.your-domain/api/common`
 - **Frontend**: Accessible at `https://your-domain`
+
+Edit and use the `hosts.sh` or `hosts.bat` script (as admin or sudo) to add the domain to your hosts file if it's a local setup.
 
 `your-domain` should be set under the ENV variable `DOMAIN`.
 
