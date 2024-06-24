@@ -117,7 +117,7 @@ async def main():
         
     vol_request
     try:
-        await nc.subscribe("validation.reservation.place.client.*", cb=handle_place_validation)
+        await nc.subscribe("validation.reservation.place.client", cb=handle_place_validation)
         await nc.subscribe("validation.remboursement.place.client.*", cb=handle_place_devalidation)
         await nc.subscribe("vol.creation", cb=handle_create_vol)
         while True:
@@ -130,3 +130,4 @@ async def main():
 
 if __name__ == '__main__':
     asyncio.run(main())
+
