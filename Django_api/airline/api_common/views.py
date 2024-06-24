@@ -11,6 +11,8 @@ from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import NotAuthenticated
+import asyncio
+import nats
 
 class ObtainAuthToken(APIView):
     permission_classes = [AllowAny]
@@ -233,6 +235,24 @@ class PaymentGatewayDetailView(generics.RetrieveUpdateDestroyAPIView):
             return PaymentGateway.objects.none()
         user = self.request.user
         return PaymentGateway.objects.filter(transaction__client=user, pk=self.kwargs.get('pk'))
+
+    async def valid_payment(self):
+        global nc
+        nc = await nats.connect("nats://192.168.164.130:4222")
+        try:
+            client = self.request.user
+            flight_reserv = self.request.Flight.objects.get(id=self.kwargs.get('pk'))
+            seat = self.request.Flight.objects.get(Plane.objects.get(id=flight_reserv.plane_id).second_class_capacity)+self.request.Flight.objects.get(Plane.objects.get(id=flight_reserv.plane_id).first_class_capacity)
+            response = await nc.request(f"banque.validation.{client}",timeout=10)
+            response_data = response.data.decode()
+            data = response_data.split(",")
+            payment=data[0]
+            if payment == "True":
+                response = await nc.request(f"validation.reservation.place.client",f"{flight_reserv} : {seat}",timeout=10)
+                data = response_data.split(",")
+                payment=data[0]
+        except Exception as e:  
+            print(e)
 
 class TrackCreateView(generics.CreateAPIView):
     queryset = Track.objects.all()

@@ -43,14 +43,13 @@ async def handle_payment_request(msg):
         reply = msg.reply
         data = msg.data.decode()
         parts = subject.split('.')
-        client = parts[1]
+        client = parts[2]
         montant = float(data)
         
         print(f"Requête de paiement reçue : client={client}, montant={montant}")
 
         if client in clients:
             if clients[client] >= montant:
-                autorize = 'true'
                 print(f"Validation de paiement reçue : autorize={autorize}")
 
                 if autorize:
