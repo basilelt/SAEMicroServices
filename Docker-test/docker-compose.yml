@@ -68,6 +68,36 @@ services:
       - "4222:4222"
     hostname: nats
 
+  banque:
+    build:
+      context: ../
+      dockerfile: ./Docker-test/NATS/banque/Dockerfile
+    environment:
+      DJANGO_ENVIRONMENT: ${DJANGO_ENVIRONMENT}
+    volumes:
+      - banque:/app/data
+    restart: unless-stopped
+    networks:
+      - proxy
+    hostname: banque
+    depends_on:
+      - nats
+
+  valid:
+    build:
+      context: ../
+      dockerfile: ./Docker-test/NATS/valid/Dockerfile
+    environment:
+      DJANGO_ENVIRONMENT: ${DJANGO_ENVIRONMENT}
+    volumes:
+      - valid:/app/data
+    restart: unless-stopped
+    networks:
+      - proxy
+    hostname: valid
+    depends_on:
+      - nats
+
   django_api:
     build:
       context: ../
@@ -96,7 +126,8 @@ services:
       - "traefik.http.services.django_api.loadbalancer.server.url=http://django_api:80"
     hostname: django-api
     depends_on:
-      - nats
+      - banque
+      - valid
 
   django_frontend:
     build: 
@@ -169,7 +200,8 @@ services:
 volumes:
   db:
   pgadmin:
-  dumps:
+  banque:
+  valid:
   certs:
 
 networks:
