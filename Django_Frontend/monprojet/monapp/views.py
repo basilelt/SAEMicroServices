@@ -5,7 +5,7 @@ from datetime import datetime
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.models import User
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from .forms import *
 from .models import *
@@ -217,13 +217,31 @@ def book_flight(request, flight_id):
     return render(request, 'monapp/book_flight.html', {'flight_id': flight_id})
 
 def payment(request, booking_id):
+    api_url = get_api_url() + 'payment/'
+    token = request.session.get('auth_token')
     booking = get_object_or_404(Booking, id=booking_id)
     if request.method == 'POST':
+        
+        headers = {
+            'Authorization': f'Token {token}',
+            'Content-Type': 'application/json',
+        }
+        
+        data = {
+            'client_id': request.user.id,
+            'booking_id': booking_id,
+        }
+        
+        
         form = PaymentForm(request.POST)
         if form.is_valid():
-            # Process payment here
-            # On successful payment:
-            return redirect('success')
+            # Assuming API_URL is the base URL for your Django API and PAYMENT_ENDPOINT is the specific endpoint for the PaymentView
+            response = requests.post(api_url, headers=headers, json=data)
+            if response.status_code == 200:
+                return redirect('success')
+            else:
+                # Handle payment failure
+                return render(request, 'monapp/payment.html', {'form': form, 'booking': booking, 'error': 'Payment failed. Please try again.'})
     else:
         form = PaymentForm(initial={'booking_id': booking_id})
     return render(request, 'monapp/payment.html', {'form': form, 'booking': booking})
@@ -278,19 +296,21 @@ def submit_cancellation_request(request, booking_id):
     return render(request, 'monapp/cancel_review.html', {'form': form})
 
 
-def review_cancellation_request(request, request_id):
+def staff_check(user):
+    return user.is_staff
+
+@login_required
+@user_passes_test(staff_check)
+def staff_review_cancellation_request(request, request_id):
     cancellation_request = CancellationRequest.objects.get(id=request_id)
     if request.method == 'POST':
-        form = CancellationReviewForm(request.POST)
-        if form.is_valid():
-            status = form.cleaned_data['status']
-            cancellation_request.status = status
-            if status == 'approved':
-                booking = cancellation_request.booking
-                booking.status = 'cancelled'
-                booking.save()
-            cancellation_request.save()
-            return redirect('some_view_name')
+        action = request.POST.get('action')
+        if action == 'approve':
+            cancellation_request.status = 'approved'
+        elif action == 'reject':
+            cancellation_request.status = 'rejected'
+        cancellation_request.save()
+        return redirect('some_staff_view_name')
     else:
-        form = CancellationReviewForm()
-    return render(request, 'your_review_template_name.html', {'form': form})
+        form = CancellationReviewForm(instance=cancellation_request)
+    return render(request, 'monapp/staff_cancel_review.html', {'form': form})

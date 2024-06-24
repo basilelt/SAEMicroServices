@@ -1,0 +1,10 @@
+{% extends 'monapp/base.html' %}
+{% block content %}
+    <h1>Review Cancellation Requests</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" name="action" value="approve">Approve</button>
+        <button type="submit" name="action" value="reject">Reject</button>
+    </form>
+{% endblock %}
