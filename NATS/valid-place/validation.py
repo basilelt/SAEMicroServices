@@ -72,10 +72,10 @@ async def handle_place_validation(msg):
         name, place=vol_request.splt(":")
         if name in vol:
             if vol[name] >= place:
-               print(f"les place du vol {name} sont reserver.")
-               vol[name] -= place
-               response_msg = f"True,Resever,Vol reservé. Les place restente sont de {vol[name]}"
-               save_vol()
+                print(f"les place du vol {name} sont reserver.")
+                vol[name] -= place
+                response_msg = f"True,Resever,Vol reservé. Les place restente sont de {vol[name]}"
+                save_vol()
             
             else:
                 print("Place insufisante")
@@ -87,7 +87,7 @@ async def handle_place_validation(msg):
         await nc.publish(reply, response_msg.encode())   
     except Exception as err:
         print(err)
- 
+
 async def handle_place_devalidation(msg):
     subject = msg.subject
     reply = msg.reply
@@ -115,7 +115,7 @@ async def vol_request():
     # Décodage de la réponse
     reponse_data = json.loads(reponse.data.decode())
     print("Received response:", reponse_data)
-   
+    
     for key, value in reponse_data.items():
         if key not in vol:
             vol[key] = value

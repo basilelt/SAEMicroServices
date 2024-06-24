@@ -42,7 +42,7 @@ class ObtainAuthToken(APIView):
         if env == 'development':
             nc = await nats.connect("nats://localhost:4222")
         else:
-              nc = await nats.connect("nats://nats:4222",user=user,password=password)
+            nc = await nats.connect("nats://nats:4222",user=user,password=password)
         try:
             response = await nc.request(f"banque.creation",f"{request.data.get('username')}:1000",timeout=10)
             response_data = response.data.decode()
@@ -186,7 +186,7 @@ class AddFlightView(generics.CreateAPIView):
         if env == 'development':
             nc = await nats.connect("nats://localhost:4222")
         else:
-              nc = await nats.connect("nats://nats:4222",user=user,password=password) 
+            nc = await nats.connect("nats://nats:4222",user=user,password=password) 
         try:
             flight_creation = f"{Flight.objects.get(id=self.kwargs.get('pk'))} : {Flight.objects.get(Plane.second_class_capacity.get(id='flight')) + Flight.objects.get(Plane.first_class_capacity.get(id='flight'))}"  
             await nc.publish(f"vol.creation",flight_creation)
@@ -226,28 +226,28 @@ class DeleteFlightView(generics.DestroyAPIView):
         if env == 'development':
             nc = await nats.connect("nats://localhost:4222")
         else:
-              nc = await nats.connect("nats://nats:4222",user=user,password=password)
+            nc = await nats.connect("nats://nats:4222",user=user,password=password)
         try:
             flidht_delete = f"{Flight.objects.get(id=self.kwargs.get('pk'))} : {Flight.objects.get(Plane.second_class_capacity.get(id='flight')) + Flight.objects.get(Plane.first_class_capacity.get(id='flight'))}"
             await nc.publish(f"vol.delete",flidht_delete)
         except Exception as e:  
             print(e)
 
-class ConfirmBookingView(APIView):
-    permission_classes = [IsAdminUser]
-
-    def post(self, request, *args, **kwargs):
-        booking_id = request.data.get('booking_id')
-        try:
-            booking = Booking.objects.get(id=booking_id)
-            if booking.status == 'pending':
-                booking.status = 'confirmed'
-                booking.save()
-                return Response({'status': 'Booking confirmed'}, status=status.HTTP_200_OK)
-            else:
-                return Response({'error': 'Booking is not in a pending state'}, status=status.HTTP_400_BAD_REQUEST)
-        except Booking.DoesNotExist:
-            return Response({'error': 'Booking not found'}, status=status.HTTP_404_NOT_FOUND)
+#class ConfirmBookingView(APIView):
+#    permission_classes = [IsAdminUser]
+#
+#    def post(self, request, *args, **kwargs):
+#        booking_id = request.data.get('booking_id')
+#        try:
+#            booking = Booking.objects.get(id=booking_id)
+#            if booking.status == 'pending':
+#                booking.status = 'confirmed'
+#                booking.save()
+#                return Response({'status': 'Booking confirmed'}, status=status.HTTP_200_OK)
+#            else:
+#                return Response({'error': 'Booking is not in a pending state'}, status=status.HTTP_400_BAD_REQUEST)
+#        except Booking.DoesNotExist:
+#            return Response({'error': 'Booking not found'}, status=status.HTTP_404_NOT_FOUND)
 
 class AddAirportView(generics.CreateAPIView):
     queryset = Airport.objects.all()
@@ -322,6 +322,35 @@ class CancellationRequestDetailView(generics.RetrieveUpdateDestroyAPIView):
             return CancellationRequest.objects.none()
         user = self.request.user
         return CancellationRequest.objects.filter(client=user, pk=self.kwargs.get('pk'))
+
+class PaymentView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        booking_id = request.data.get('booking_id')
+        booking = get_object_or_404(Booking, id=booking_id)
+        client_id = booking.client.id
+        client = get_object_or_404(User, id=client_id)
+        
+        # Simulate payment process. In a real scenario, you would integrate with a payment gateway.
+        payment_successful = True  # This should be replaced with actual payment verification logic
+
+        if payment_successful:
+            booking.status = 'confirmed'
+            booking.save()
+            
+            # Create a new Transaction instance
+            transaction = Transaction(
+                client=client,
+                amount=100.00,  # Replace with actual amount
+                status='completed',
+                booking=booking
+            )
+            transaction.save()
+
+            return Response({'status': 'Payment successful and booking confirmed'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'Payment failed'}, status=status.HTTP_400_BAD_REQUEST)
 
 # new-2
 class PaymentGatewayListView(generics.ListCreateAPIView):
