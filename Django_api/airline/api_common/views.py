@@ -57,8 +57,10 @@ class BookingListView(generics.ListCreateAPIView):
         data = request.data
         flight = Flight.objects.get(id=data['flight'])
         # Assuming 'client' is a field in 'Booking' model that refers to the user
+        booking_type = data.get('booking_type')  # Provide a value for booking_type
         booking = Booking.objects.create(
             client=request.user,
+            booking_type=booking_type,
             flight=flight,
             # Add other necessary fields from 'data' as needed
         )
