@@ -42,7 +42,7 @@ class ObtainAuthToken(APIView):
         if env == 'development':
             nc = await nats.connect("nats://localhost:4222")
         else:
-              nc = await nats.connect("nats://nats:4222",user=user,password=password)
+            nc = await nats.connect("nats://nats:4222",user=user,password=password)
         try:
             response = await nc.request(f"banque.creation",f"{request.data.get('username')}:1000",timeout=10)
             response_data = response.data.decode()
@@ -186,7 +186,7 @@ class AddFlightView(generics.CreateAPIView):
         if env == 'development':
             nc = await nats.connect("nats://localhost:4222")
         else:
-              nc = await nats.connect("nats://nats:4222",user=user,password=password) 
+            nc = await nats.connect("nats://nats:4222",user=user,password=password) 
         try:
             flight_creation = f"{Flight.objects.get(id=self.kwargs.get('pk'))} : {Flight.objects.get(Plane.second_class_capacity.get(id='flight')) + Flight.objects.get(Plane.first_class_capacity.get(id='flight'))}"  
             await nc.publish(f"vol.creation",flight_creation)
@@ -226,7 +226,7 @@ class DeleteFlightView(generics.DestroyAPIView):
         if env == 'development':
             nc = await nats.connect("nats://localhost:4222")
         else:
-              nc = await nats.connect("nats://nats:4222",user=user,password=password)
+            nc = await nats.connect("nats://nats:4222",user=user,password=password)
         try:
             flidht_delete = f"{Flight.objects.get(id=self.kwargs.get('pk'))} : {Flight.objects.get(Plane.second_class_capacity.get(id='flight')) + Flight.objects.get(Plane.first_class_capacity.get(id='flight'))}"
             await nc.publish(f"vol.delete",flidht_delete)
@@ -345,7 +345,7 @@ class PaymentGatewayDetailView(generics.RetrieveUpdateDestroyAPIView):
         user = self.request.user
         return PaymentGateway.objects.filter(transaction__client=user, pk=self.kwargs.get('pk'))
 
-    async def valid_payment(self):
+    async def valid_payment(self, user_reserv, flight_id_reserv, price_seat):
         global nc
         env = os.getenv('DJANGO_ENVIRONMENT', 'development')
         user = os.getenv('NATS_USER', '')
@@ -355,16 +355,15 @@ class PaymentGatewayDetailView(generics.RetrieveUpdateDestroyAPIView):
         else:
             nc = await nats.connect("nats://nats:4222",user=user,password=password)
         try:
-            client = self.request.user
-            flight_reserv = Flight.plane.second_class_capacity.get(id='flight') + Flight.plane.first_class_capacity.get(id='flight')
-            seat = self.request.Flight.objects.get(id=self.kwargs.get('pk')).Plane.second_class_capacity + self.request.Flight.objects.get(id=self.kwargs.get('pk')).Flight.Plane.first_class_capacity
-            response = await nc.request(f"banque.validation.{client}",timeout=10)
+            client = user_reserv
+            flight_reserv = flight_id_reserv
+            seat = 1
+            response = await nc.request(f"validation.reservation.place.client",f"{flight_reserv} : {seat}",timeout=10)
             response_data = response.data.decode()
             data = response_data.split(",")
             payment=data[0]
             if payment == "True":
-                response = await nc.request(f"validation.reservation.place.client",f"{flight_reserv} : {seat}",timeout=10)
-                response_data = response.data.decode()
+                response = await nc.request(f"banque.validation.{client}",str(price_seat),timeout=10)                response_data = response.data.decode()
                 data = response_data.split(",")
                 payment=data[0]
                 if payment == "True":
@@ -373,6 +372,16 @@ class PaymentGatewayDetailView(generics.RetrieveUpdateDestroyAPIView):
                     return Response({'error': 'Payment failed'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:  
             print(e)
+
+    async def create(self, request):
+        # Call the valid_payment function here
+        await self.valid_payment(request.data['user_reserv'], request.data['flight_id_reserv'], request.data['price_seat'])
+        
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 class TrackCreateView(generics.CreateAPIView):
     queryset = Track.objects.all()
