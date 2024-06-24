@@ -4,12 +4,10 @@ import json
 import pickle
 import os
 
-data_dir = "/valid-place/data"
-data_file = os.path.join(data_dir, "vol.pkl")
-
-
+data_dir = "./data"
 if not os.path.exists(data_dir):
     os.makedirs(data_dir)
+data_file = os.path.join(data_dir, "vol.pkl")
 
 if os.path.exists(data_file):
     with open(data_file, "rb") as f:
@@ -109,7 +107,14 @@ async def vol_request():
 
 async def main():
     global nc
-    nc = await nats.connect("nats://192.168.164.130:4222")
+    env = os.getenv("DJANGO_ENVIRONMENT", "development")
+    user = os.getenv("NATS_USER", '')
+    password = os.getenv("NATS_PASSWORD", '')
+    if env == "development":
+        nc = await nats.connect("nats://localhost:4222", user=user, password=password)
+    else:
+        nc = await nats.connect("nats://nats:4222", user=user, password=password)
+        
     vol_request
     try:
         await nc.subscribe("validation.reservation.place.client", cb=handle_place_validation)

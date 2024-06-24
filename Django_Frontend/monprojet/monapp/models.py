@@ -65,6 +65,7 @@ class Booking(models.Model):
     booking_type = models.ForeignKey(BookingType, on_delete=models.CASCADE)
     client = models.ForeignKey(User, on_delete=models.CASCADE)
     flight = models.ForeignKey(Flight, on_delete=models.CASCADE)
+    status = models.CharField(max_length=20, default='pending')
     
     class Meta:
         db_table = 'booking'

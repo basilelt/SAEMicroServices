@@ -2,7 +2,7 @@ import requests
 import logging
 import os
 from datetime import datetime
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
@@ -10,6 +10,7 @@ from django.contrib.auth import authenticate, login as auth_login, logout as aut
 from .forms import *
 from .models import *
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.urls import reverse
 
 # Create your views here.
 
@@ -111,35 +112,46 @@ def logout(request):
 
 def view_flights(request):
     api_url = get_api_url()
+    
+    token = request.session.get('auth_token')
+    
+    headers = {
+            'Authorization': f'Token {token}',
+        }
+    
+    
     flights_url = f'{api_url}flights/'
     airports_url = f'{api_url}airports/'
     planes_url = f'{api_url}planes/'
     tracks_url = f'{api_url}tracks/'
     
+    
+    
+    
     try:
         # Make API calls
-        flights_response = requests.get(flights_url).json()
+        flights_response = requests.get(flights_url, headers=headers).json()
         flight_details = []
         
         for flight in flights_response:
             plane = flight['plane']
-            plane_response = requests.get(f"{planes_url}{plane}").json()
+            plane_response = requests.get(f"{planes_url}{plane}", headers=headers).json()
             
             first_class_capacity = plane_response['first_class_capacity']
             second_class_capacity = plane_response['second_class_capacity']
 
             # Get track origin details
             track_origin = flight['track_origin']
-            track_origin_response = requests.get(f"{tracks_url}{track_origin}").json()
+            track_origin_response = requests.get(f"{tracks_url}{track_origin}", headers=headers).json()
             airport_origin_id = track_origin_response['airport']
-            airport_origin_response = requests.get(f"{airports_url}{airport_origin_id}").json()
+            airport_origin_response = requests.get(f"{airports_url}{airport_origin_id}", headers=headers).json()
             origin = airport_origin_response['location']
 
             # Get track destination details
             track_destination = flight['track_destination']
-            track_destination_response = requests.get(f"{tracks_url}{track_destination}").json()
+            track_destination_response = requests.get(f"{tracks_url}{track_destination}", headers=headers).json()
             airport_destination_id = track_destination_response['airport']
-            airport_destination_response = requests.get(f"{airports_url}{airport_destination_id}").json()
+            airport_destination_response = requests.get(f"{airports_url}{airport_destination_id}", headers=headers).json()
             destination = airport_destination_response['location']
             
             # Format departure and arrival times
@@ -163,8 +175,10 @@ def view_flights(request):
 
     except requests.exceptions.RequestException as e:
         logging.error(f"Request error: {e}")
+        return HttpResponse("An error occurred while fetching flight data.", status=500)
     except ValueError as e:
         logging.error(f"Value error: {e}")
+        return HttpResponse("An error occurred while processing flight data.", status=500)
 
 def book_flight(request, flight_id):
     if not request.user.is_authenticated:
@@ -176,11 +190,7 @@ def book_flight(request, flight_id):
 
     if request.method == 'POST':
         booking_type = request.POST.get('booking_type')
-        try:
-            booking_type = int(booking_type)
-            booking_type= BookingType.objects.get(id=booking_type)
-        except (ValueError, BookingType.DoesNotExist):
-            return HttpResponse('Invalid booking type. Please select a valid booking type.', status=400)
+        booking_type = int(booking_type)
 
 
         headers = {
@@ -190,7 +200,7 @@ def book_flight(request, flight_id):
 
         data = {
             'client_id': request.user.id,
-            'booking_type': booking_type.type,
+            'booking_type': booking_type,
             'flight': flight_id,
         }
 
@@ -199,7 +209,8 @@ def book_flight(request, flight_id):
             response = requests.post(api_url, headers=headers, json=data)
 
             if response.status_code == 201:
-                return redirect('success')
+                booking_id = response.json().get('id')  # Example, adjust based on actual response structure
+                return redirect('confirm_booking', booking_id=booking_id)
             else:
                 return HttpResponse(f'Booking failed. Please try again later. Error: {response.text}')
         except requests.exceptions.RequestException as e:
@@ -208,3 +219,50 @@ def book_flight(request, flight_id):
             logging.error(f'Unexpected error: {e}')
 
     return render(request, 'monapp/book_flight.html', {'flight_id': flight_id})
+
+def payment(request, booking_id):
+    booking = get_object_or_404(Booking, id=booking_id)
+    if request.method == 'POST':
+        form = PaymentForm(request.POST)
+        if form.is_valid():
+            # Process payment here
+            # On successful payment:
+            return redirect('confirm_booking', booking_id=booking.id)
+    else:
+        form = PaymentForm(initial={'booking_id': booking_id})
+    return render(request, 'monapp/payment.html', {'form': form, 'booking': booking})
+
+def view_bookings(request):
+    if not request.user.is_authenticated:
+        return HttpResponse('You must be logged in to view your bookings.', status=401)
+
+    api_url = get_api_url() + 'bookings/'  # Make sure this is the correct endpoint
+    token = request.session.get('auth_token')
+
+    headers = {
+        'Authorization': f'Token {token}',
+    }
+
+    try:
+        response = requests.get(api_url, headers=headers)
+        if response.status_code == 200:
+            bookings = response.json()
+        else:
+            return HttpResponse('Failed to fetch bookings. Please try again later.', status=response.status_code)
+    except requests.exceptions.RequestException as e:
+        return HttpResponse(f'Request error: {e}', status=500)
+
+    return render(request, 'monapp/user_bookings.html', {'bookings': bookings})
+
+
+def confirm_booking(request, booking_id):
+    if request.method == 'POST':
+        # Redirect to the payment page
+        return redirect('payment', booking_id=booking_id)
+    else:
+        booking = get_object_or_404(Booking, id=booking_id)
+        flight = booking.flight
+        # Add any additional logic here if needed to fetch or format flight details
+        context = {'booking': booking, 'flight': flight}
+        return render(request, 'monapp/confirm_booking.html', context)
+    

@@ -1,2 +1,0 @@
-Votre application se présentera sous la forme d’un site web présentant les différents vols, permettant à une personne de créer un compte client, un compte staff (par une autre personne du staff uniquement), de faire une réservation sur un vol (pour un client), de faire l’achat de billet (pour un client), de consulter ses réservations et ses achats. 
-Le site web ne fera aucune insertion directe dans la base de données (à l’exception de la création d’ utilisateur) , il faudra créer des API permettant d’effectuer ce travail. 

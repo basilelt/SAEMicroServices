@@ -105,7 +105,7 @@ class Flight(models.Model):
 
 class BookingType(models.Model):
     type = models.CharField(max_length=30)  # 例如：'Flexible', 'Non-refundable'
-    class_type = models.CharField(max_length=30, choices=[('first', 'First Class'), ('second', 'Second Class')])
+    #class_type = models.CharField(max_length=30, choices=[('first', 'First Class'), ('second', 'Second Class')])
     price = models.FloatField(null=True)
 
     class Meta:
@@ -117,6 +117,7 @@ class Booking(models.Model):
     booking_type = models.ForeignKey(BookingType, on_delete=models.CASCADE)
     client = models.ForeignKey(User, on_delete=models.CASCADE)
     flight = models.ForeignKey(Flight, on_delete=models.CASCADE)
+    status = models.CharField(max_length=20, default='pending')
 
     class Meta:
         db_table = 'booking'
