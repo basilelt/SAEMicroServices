@@ -1,0 +1,13 @@
+{% extends 'monapp/base.html' %}
+
+{% block content %}
+    <h1>Create Staff User</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Create Staff User</button>
+    </form>
+    <script>
+        document.getElementById("id_username").focus();
+    </script>
+{% endblock %}

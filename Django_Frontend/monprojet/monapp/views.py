@@ -301,16 +301,38 @@ def staff_check(user):
 
 @login_required
 @user_passes_test(staff_check)
-def staff_review_cancellation_request(request, request_id):
-    cancellation_request = CancellationRequest.objects.get(id=request_id)
+def staff_review_cancellation_request(request):
     if request.method == 'POST':
         action = request.POST.get('action')
+        request_id = request.POST.get('request_id')
+        cancellation_request = CancellationRequest.objects.get(id=request_id)
         if action == 'approve':
             cancellation_request.status = 'approved'
+            # Assuming you have the booking ID and the API endpoint URL
+            booking_id = cancellation_request.booking.id
+            api_url = f"{get_api_url()}bookings/{booking_id}/"  # Update with your actual API URL
+            headers = {'Authorization': f'Token {request.session.get('auth_token')}'}  # Update with actual auth method
+            data = {'status': 'cancelled'}
+            response = requests.patch(api_url, headers=headers, data=data)
+            if response.status_code == 200:
+                print("Booking status updated successfully.")
+            else:
+                print("Failed to update booking status.")
         elif action == 'reject':
             cancellation_request.status = 'rejected'
         cancellation_request.save()
-        return redirect('some_staff_view_name')
+    cancellation_requests = CancellationRequest.objects.all().order_by('id')
+    return render(request, 'monapp/staff_cancel_review.html', {'cancellation_requests': cancellation_requests})
+
+
+@login_required
+@user_passes_test(staff_check)
+def create_staff_user(request):
+    if request.method == 'POST':
+        form = StaffCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('home')  # Assuming you have a URL named 'staff_list' to list staff users
     else:
-        form = CancellationReviewForm(instance=cancellation_request)
-    return render(request, 'monapp/staff_cancel_review.html', {'form': form})
+        form = StaffCreationForm()
+    return render(request, 'monapp/create_staff_user.html', {'form': form})
