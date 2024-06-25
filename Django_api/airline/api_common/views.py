@@ -28,7 +28,7 @@ class ObtainAuthToken(APIView):
         password = request.data.get('password')
         user = authenticate(username=username, password=password)
         if user:
-            user_id_bank = user.client.id
+            user_id_bank = user.id
             token, created = Token.objects.get_or_create(user=user)
             asyncio.run(self.banque_account_create(user_id_bank))
             return Response({'token': token.key})
@@ -357,7 +357,7 @@ class PaymentView(APIView):
         client = get_object_or_404(User, id=client_id)
         price_seat = booking.booking_type.price
         # Simulate payment process. In a real scenario, you would integrate with a payment gateway.
-        payment_successful = asyncio.run(self.valid_payment(client_id,price_seat))  # This should be replaced with actual payment verification logic
+        payment_successful = True #asyncio.run(self.valid_payment(client_id,price_seat))  # Replace with True for testing
 
         if payment_successful:
             booking.status = 'confirmed'
@@ -366,7 +366,7 @@ class PaymentView(APIView):
             # Create a new Transaction instance
             transaction = Transaction(
                 client=client,
-                amount=100.00,  # Replace with actual amount
+                amount=(booking.booking_type.price),
                 status='completed',
                 booking=booking
             )

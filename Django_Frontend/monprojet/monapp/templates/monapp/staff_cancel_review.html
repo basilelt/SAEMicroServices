@@ -1,10 +1,18 @@
 {% extends 'monapp/base.html' %}
 {% block content %}
-    <h1>Review Cancellation Requests</h1>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" name="action" value="approve">Approve</button>
-        <button type="submit" name="action" value="reject">Reject</button>
-    </form>
+<h1>Review Cancellation Requests</h1>
+{% for cancellation_request in cancellation_requests %}
+    <div>
+        <p>Request ID: {{ cancellation_request.id }}</p>
+        <p>Booking ID: {{ cancellation_request.booking.id }}</p>
+        <p>Reason: {{ cancellation_request.reason }}</p>
+        <p>Status: {{ cancellation_request.status }}</p>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="request_id" value="{{ cancellation_request.id }}">
+            <button type="submit" name="action" value="approve">Approve</button>
+            <button type="submit" name="action" value="reject">Reject</button>
+        </form>
+    </div>
+{% endfor %}
 {% endblock %}

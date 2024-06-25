@@ -13,15 +13,19 @@
             <div class="menu-button">
             Menu
                 <div class="menu-content">
-                    {% get_urlpatterns as links %}
-                    {% for url, name in links %}
-                        <a href="{{ url }}">{{ name }}</a>
-                    {% endfor %}
+                    {% if user.is_authenticated and user.is_staff %}
+                        <a href="{% url 'staff_cancel_review' %}">Staff cancel review</a>
+                        <a href="{% url 'create_staff_user' %}">Create staff user</a>
+                    {% endif %}
+                    <a href="{% url 'home' %}">Home</a>
+                    <a href="{% url 'register' %}">Register</a>
+                    <a href="{% url 'flights' %}">Flights</a>
+                    <a href="{% url 'view_bookings' %}">Bookings</a>
                 </div>
             </div>
         </nav>
         {% if user.is_authenticated %}
-        <p>Logged in as: {{ user.username }}</p>
+        <p>Logged in as: {{ user.username }}{% if user.is_staff %} (Staff){% endif %}</p>
         <form action="{% url 'logout' %}" method="post">
                 {% csrf_token %}
                 <button type="submit" class="menu-button">Logout</button>

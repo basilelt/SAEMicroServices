@@ -55,3 +55,23 @@ class CancellationRequestForm(forms.ModelForm):
 
 class CancellationReviewForm(forms.Form):
     status = forms.ChoiceField(choices=[('approved', 'Approve'), ('rejected', 'Reject')])
+    
+    
+class StaffCreationForm(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput)
+    is_staff = forms.BooleanField(required=False, initial=True, widget=forms.HiddenInput())  # Make is_staff hidden and non-required
+    staff_type = forms.ModelChoiceField(queryset=StaffType.objects.all(), initial=1)
+
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'password', 'is_staff', 'staff_type')
+        
+    def save(self, commit=True):
+        user = super(StaffCreationForm, self).save(commit=False)
+        user.set_password(self.cleaned_data['password'])
+        user.is_staff = True  # Ensure is_staff is always True regardless of form input
+        if commit:
+            user.save()
+            staff = Staff(user=user)
+            staff.save()
+        return user
