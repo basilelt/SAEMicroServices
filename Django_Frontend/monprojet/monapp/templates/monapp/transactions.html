@@ -1,0 +1,17 @@
+<!-- Django_Frontend/monprojet/monapp/templates/monapp/transactions.html -->
+
+{% extends 'monapp/base.html' %}
+{% block content %}
+<h1>Your Transactions</h1>
+{% if transactions %}
+    <ul>
+        {% for transaction in transactions %}
+            <li>
+                <strong>Transaction ID:</strong> {{ transaction.id }}, <strong>Amount:</strong> {{ transaction.amount }}, <strong>Date of the transaction:</strong> {{transaction.transaction_date}} <strong>Status:</strong> {{ transaction.status }}
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>You have no transactions.</p>
+{% endif %}
+{% endblock %}

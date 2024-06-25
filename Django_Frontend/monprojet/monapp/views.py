@@ -280,6 +280,20 @@ def confirm_booking(request, booking_id):
         context = {'booking': booking, 'flight': flight}
         return render(request, 'monapp/confirm_booking.html', context)
     
+def transactions_view(request):
+    if not request.user.is_authenticated:
+        return HttpResponse('You must be logged in to view your bookings.', status=401)
+
+    api_url = f"{get_api_url()}transactions/"  # Adjust API_URL in your settings.py accordingly
+    headers = {'Authorization': f'Token {request.session.get('auth_token')}'}  # Assuming token-based authentication
+    response = requests.get(api_url, headers=headers)
+
+    if response.status_code == 200:
+        transactions = response.json()
+    else:
+        transactions = []
+
+    return render(request, 'monapp/transactions.html', {'transactions': transactions})
     
 def submit_cancellation_request(request, booking_id):
     booking = Booking.objects.get(id=booking_id)
@@ -336,3 +350,14 @@ def create_staff_user(request):
     else:
         form = StaffCreationForm()
     return render(request, 'monapp/create_staff_user.html', {'form': form})
+
+@login_required
+def create_flight(request):
+    if request.method == 'POST':
+        form = FlightForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('flights')
+    else:
+        form = FlightForm()
+    return render(request, 'monapp/create_flight.html', {'form': form})
