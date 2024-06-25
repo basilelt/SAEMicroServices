@@ -75,3 +75,17 @@ class StaffCreationForm(forms.ModelForm):
             staff = Staff(user=user)
             staff.save()
         return user
+    
+class FlightForm(forms.ModelForm):
+    class Meta:
+        model = Flight
+        fields = ['flight_number', 'departure', 'arrival', 'plane', 'track_origin', 'track_destination']
+        widgets = {
+            'departure': forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
+            'arrival': forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(FlightForm, self).__init__(*args, **kwargs)
+        self.fields['departure'].input_formats = ('%Y-%m-%dT%H:%M',)
+        self.fields['arrival'].input_formats = ('%Y-%m-%dT%H:%M',)

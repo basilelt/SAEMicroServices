@@ -375,16 +375,6 @@ class PaymentView(APIView):
             return Response({'status': 'Payment successful and booking confirmed'}, status=status.HTTP_200_OK)
         else:
             return Response({'error': 'Payment failed'}, status=status.HTTP_400_BAD_REQUEST)
-    
-# new-2
-class PaymentGatewayListView(generics.ListCreateAPIView):
-    queryset = PaymentGateway.objects.all()
-    serializer_class = PaymentGatewaySerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        user = self.request.user
-        return PaymentGateway.objects.filter(transaction__client=user)
 
 # new-2
 class PaymentGatewayDetailView(generics.RetrieveUpdateDestroyAPIView):

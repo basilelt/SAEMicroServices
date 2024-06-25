@@ -36,11 +36,6 @@ urlpatterns = [
     path('cancellation-requests/update/<int:pk>/', CancellationRequestDetailView.as_view(), name='update-cancellation-request'),  # Utiliser la même vue, ajouter une route
     path('cancellation-requests/delete/<int:pk>/', CancellationRequestDetailView.as_view(), name='delete-cancellation-request'),  # Utiliser la même vue, ajouter une route
 
-    # Gestion des passerelles de paiement
-    path('payment-gateways/', PaymentGatewayListView.as_view(), name='payment-gateway-list'),
-    path('payment-gateways/<int:pk>/', PaymentGatewayDetailView.as_view(), name='payment-gateway-detail'),
-    path('payment-gateways/add/', PaymentGatewayListView.as_view(), name='add-payment-gateway'),  # Utiliser la même vue, ajouter une route
-
     # Gestion des aéroports
     path('airports/', AirportListView.as_view(), name='airport-list'),
     path('airports/<int:pk>/', AirportDetailView.as_view(), name='airport-detail'),
