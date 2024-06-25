@@ -7,7 +7,7 @@
     <ul>
         {% for transaction in transactions %}
             <li>
-                <strong>Transaction ID:</strong> {{ transaction.id }}, <strong>Amount:</strong> {{ transaction.amount }}, <strong>Date of the transaction:</strong> {{transaction.transaction_date}} <strong>Status:</strong> {{ transaction.status }}
+                <strong>Transaction ID:</strong> {{ transaction.id }}, <strong>Amount:</strong> {{ transaction.amount }}, <strong>Date of the transaction:</strong> {{ transaction.transaction_date }}, <strong>Status:</strong> {{ transaction.status }}
             </li>
         {% endfor %}
     </ul>

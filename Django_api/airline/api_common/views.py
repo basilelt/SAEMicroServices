@@ -59,6 +59,15 @@ class UserListView(generics.ListCreateAPIView):
     permission_classes = [IsAdminUser]
 
 class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    API view for handling individual user details.
+
+    This view allows for retrieving, updating, or deleting user details. Access is restricted to admin users only.
+
+    :model: User
+    :serializer: UserSerializer
+    :permission_classes: IsAdminUser
+    """
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAdminUser]
@@ -231,51 +240,35 @@ class DeleteFlightView(generics.DestroyAPIView):
         except Exception as e:  
             print(e)
 
-#class ConfirmBookingView(APIView):
-#    permission_classes = [IsAdminUser]
-#
-#    def post(self, request, *args, **kwargs):
-#        booking_id = request.data.get('booking_id')
-#        try:
-#            booking = Booking.objects.get(id=booking_id)
-#            if booking.status == 'pending':
-#                booking.status = 'confirmed'
-#                booking.save()
-#                return Response({'status': 'Booking confirmed'}, status=status.HTTP_200_OK)
-#            else:
-#                return Response({'error': 'Booking is not in a pending state'}, status=status.HTTP_400_BAD_REQUEST)
-#        except Booking.DoesNotExist:
-#            return Response({'error': 'Booking not found'}, status=status.HTTP_404_NOT_FOUND)
-
 class AddAirportView(generics.CreateAPIView):
     queryset = Airport.objects.all()
     serializer_class = AirportSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsStaffUser]
 
 class UpdateAirportView(generics.UpdateAPIView):
     queryset = Airport.objects.all()
     serializer_class = AirportSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsStaffUser]
 
 class DeleteAirportView(generics.DestroyAPIView):
     queryset = Airport.objects.all()
     serializer_class = AirportSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsStaffUser]
 
 class AddPlaneView(generics.CreateAPIView):
     queryset = Plane.objects.all()
     serializer_class = PlaneSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsStaffUser]
 
 class UpdatePlaneView(generics.UpdateAPIView):
     queryset = Plane.objects.all()
     serializer_class = PlaneSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsStaffUser]
 
 class DeletePlaneView(generics.DestroyAPIView):
     queryset = Plane.objects.all()
     serializer_class = PlaneSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsStaffUser]
 
 # new-2
 class TransactionListView(generics.ListCreateAPIView):
@@ -289,6 +282,15 @@ class TransactionListView(generics.ListCreateAPIView):
 
 # new-2
 class TransactionDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    API view for handling individual transactions.
+
+    This view allows for retrieving, updating, or deleting a transaction. Access is restricted to authenticated users who are the client of the transaction.
+
+    :model: Transaction
+    :serializer: TransactionSerializer
+    :permission_classes: IsAuthenticated
+    """
     queryset = Transaction.objects.all()
     serializer_class = TransactionSerializer
     permission_classes = [IsAuthenticated]
@@ -311,6 +313,15 @@ class CancellationRequestListView(generics.ListCreateAPIView):
 
 # new-2
 class CancellationRequestDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    API view for handling individual cancellation requests.
+
+    This view allows for retrieving, updating, or deleting a cancellation request. Access is restricted to authenticated users who are the client of the request.
+
+    :model: CancellationRequest
+    :serializer: CancellationRequestSerializer
+    :permission_classes: IsAuthenticated
+    """
     queryset = CancellationRequest.objects.all()
     serializer_class = CancellationRequestSerializer
     permission_classes = [IsAuthenticated]
@@ -324,11 +335,6 @@ class CancellationRequestDetailView(generics.RetrieveUpdateDestroyAPIView):
 class PaymentView(APIView):
     permission_classes = [IsAuthenticated]
 
-        
-        
- 
-
-    
     def post(self, request, *args, **kwargs):
         booking_id = request.data.get('booking_id')
         booking = get_object_or_404(Booking, id=booking_id)
@@ -339,9 +345,9 @@ class PaymentView(APIView):
         subject="banque.validation"
         message = f"{client_id}:{price_seat}"
         # Simulate payment process. In a real scenario, you would integrate with a payment gateway.
-        data=asyncio.run(request_message(subject,message,server,price_seat)) 
-        data.split(",")
-        payment_successful = data[0] # Replace with True for testing
+        #data=asyncio.run(request_message(subject,message,server,price_seat)) 
+        #data.split(",")
+        payment_successful = True #data[0] # Replace with True for testing
 
         if payment_successful:
             booking.status = 'confirmed'
@@ -360,34 +366,11 @@ class PaymentView(APIView):
         else:
             return Response({'error': 'Payment failed'}, status=status.HTTP_400_BAD_REQUEST)
 
-# new-2
-class PaymentGatewayDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = PaymentGateway.objects.all()
-    serializer_class = PaymentGatewaySerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        if getattr(self, 'swagger_fake_view', False):
-            return PaymentGateway.objects.none()
-        user = self.request.user
-        return PaymentGateway.objects.filter(transaction__client=user, pk=self.kwargs.get('pk'))
-
-    
-
-    async def create(self, request):
-        # Call the valid_payment function here
-        await self.valid_payment(request.data['user_reserv'], request.data['flight_id_reserv'], request.data['price_seat'])
-        
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 class TrackCreateView(generics.CreateAPIView):
     queryset = Track.objects.all()
     serializer_class = TrackSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsStaffUser]
     
 class TrackListView(generics.ListAPIView):
     queryset = Track.objects.all()
@@ -402,9 +385,9 @@ class TrackDetailView(generics.RetrieveUpdateDestroyAPIView):
 class TrackUpdateView(generics.UpdateAPIView):
     queryset = Track.objects.all()
     serializer_class = TrackSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsStaffUser]
     
 class TrackDeleteView(generics.DestroyAPIView):
     queryset = Track.objects.all()
     serializer_class = TrackSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsStaffUser]
