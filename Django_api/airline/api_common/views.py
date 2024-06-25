@@ -16,7 +16,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import NotAuthenticated
 import asyncio
 import nats
-
+from .to_nats import * 
 import os
 
 
@@ -229,7 +229,7 @@ class DeleteFlightView(generics.DestroyAPIView):
         else:
             nc = await nats.connect("nats://nats:4222",user=user,password=password)
         try:
-            flidht_delete = f"{Flight.objects.get(id=self.kwargs.get('pk'))} : {Flight.objects.get(Plane.second_class_capacity.get(id='flight')) + Flight.objects.get(Plane.first_class_capacity.get(id='flight'))}"
+            flidht_delete = f"{Flight.objects.get(id=self.kwargs.get('pk'))}"
             await nc.publish(f"vol.delete",flidht_delete)
         except Exception as e:  
             print(e)
@@ -326,29 +326,11 @@ class CancellationRequestDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 class PaymentView(APIView):
     permission_classes = [IsAuthenticated]
-    
-    async def valid_payment(self, user_reserv, price_seat):
-        global nc
-        env = os.getenv('DJANGO_ENVIRONMENT', 'development')
-        user = os.getenv('NATS_USER', 'user')
-        password = os.getenv('NATS_PASSWORD', 'password')
-        if env == 'development':
-            nc = await nats.connect("nats://localhost:4222")
-        else:
-            nc = await nats.connect("nats://nats:4222",user=user,password=password)
-        try:
-            client = user_reserv
-            if payment == "True":
-                response = await nc.request(f"banque.validation.{client}", str(price_seat), timeout=10)   
-                response_data = response.data.decode()
-                data = response_data.split(",")
-                payment=data[0]
-                if payment == "True":
-                    return True
-                else:
-                    return False
-        except Exception as e:  
-            print(e)
+
+        
+        
+ 
+
     
     def post(self, request, *args, **kwargs):
         booking_id = request.data.get('booking_id')
@@ -356,8 +338,13 @@ class PaymentView(APIView):
         client_id = booking.client.id
         client = get_object_or_404(User, id=client_id)
         price_seat = booking.booking_type.price
+        server ="nats://nats:4222"
+        subject="banque.validation"
+        message = f"{client_id}:{price_seat}"
         # Simulate payment process. In a real scenario, you would integrate with a payment gateway.
-        payment_successful = True #asyncio.run(self.valid_payment(client_id,price_seat))  # Replace with True for testing
+        data=asyncio.run(request_message(subject,message,server,price_seat)) 
+        data.split(",")
+        payment_successful = data[0] # Replace with True for testing
 
         if payment_successful:
             booking.status = 'confirmed'
