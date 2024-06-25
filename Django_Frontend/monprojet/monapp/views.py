@@ -1,5 +1,6 @@
 import requests
 import logging
+import json
 import os
 from datetime import datetime
 from django.shortcuts import render, redirect, get_object_or_404
@@ -9,7 +10,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from .forms import *
 from .models import *
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 
 # Create your views here.
@@ -361,3 +362,55 @@ def create_flight(request):
     else:
         form = FlightForm()
     return render(request, 'monapp/create_flight.html', {'form': form})
+
+@login_required
+def update_flight(request, flight_id):
+    flight = get_object_or_404(Flight, id=flight_id)
+    api_url = f"{get_api_url()}flights/{flight_id}/"  # Adjusted to match RESTful URL pattern
+
+    token = request.session.get('auth_token')
+    headers = {'Authorization': f'Token {token}', 'Content-Type': 'application/json'}
+
+    if request.method == 'POST':
+        form = FlightForm(request.POST, instance=flight)
+        if form.is_valid():
+            cleaned_data = form.cleaned_data
+            # Format datetime fields as strings
+            cleaned_data['departure'] = cleaned_data['departure'].strftime('%Y-%m-%dT%H:%M')
+            cleaned_data['arrival'] = cleaned_data['arrival'].strftime('%Y-%m-%dT%H:%M')
+
+            # Ensure primary key values are used for foreign key fields
+            cleaned_data['plane'] = cleaned_data['plane'].id if cleaned_data.get('plane') else None
+            cleaned_data['track_origin'] = cleaned_data['track_origin'].id if cleaned_data.get('track_origin') else None
+            cleaned_data['track_destination'] = cleaned_data['track_destination'].id if cleaned_data.get('track_destination') else None
+
+            # Convert the cleaned data to JSON
+            json_data = json.dumps(cleaned_data, default=str)
+
+            # Since we're using PATCH, all updates are considered partial
+            response = requests.patch(api_url, data=json_data, headers=headers)
+            if response.status_code == 200:
+                return redirect('flights')  # Redirect to the flight listing page
+            else:
+                # Handle API errors or display a message to the user
+                return JsonResponse({'error': 'API error', 'details': response.text}, status=response.status_code)
+    else:
+        form = FlightForm(instance=flight)
+    return render(request, 'monapp/update_flight.html', {'form': form})
+
+@login_required
+def delete_flight(request, flight_id):
+    api_url = f"{get_api_url()}flights/delete/"
+    token = request.session.get('auth_token')
+    
+    headers = {'Authorization': f'Token {token}'}
+    
+    if request.method == 'POST':
+        # Assuming the API endpoint for deleting a flight is /api/flights/<flight_id>/
+        response = requests.delete(f'{api_url}{flight_id}/', headers=headers)
+        if response.status_code == 204:
+            return redirect('flights')  # Redirect to the flight listing page
+        else:
+            # Handle API errors or display a message to the user
+            pass
+    return render(request, 'monapp/delete_flight.html', {'flight_id': flight_id})

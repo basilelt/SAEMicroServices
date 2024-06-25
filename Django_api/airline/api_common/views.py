@@ -4,19 +4,15 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
+from .permissions import IsStaffUser
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from .models import *
 from .serializers import *
-from django.contrib.auth import authenticate
-from rest_framework.authtoken.models import Token
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.exceptions import NotAuthenticated
 import asyncio
 import nats
-
 import os
 
 
@@ -156,7 +152,7 @@ class AllBookingsListView(generics.ListAPIView):
 class AddFlightView(generics.CreateAPIView):
     queryset = Flight.objects.all()
     serializer_class = FlightSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsStaffUser]
 
     def create(self, request, *args, **kwargs):
         data = request.data
@@ -197,7 +193,7 @@ class AddFlightView(generics.CreateAPIView):
 class UpdateFlightView(generics.UpdateAPIView):
     queryset = Flight.objects.all()
     serializer_class = FlightSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsStaffUser]
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
@@ -211,7 +207,7 @@ class UpdateFlightView(generics.UpdateAPIView):
 class DeleteFlightView(generics.DestroyAPIView):
     queryset = Flight.objects.all()
     serializer_class = FlightSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsStaffUser]
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()

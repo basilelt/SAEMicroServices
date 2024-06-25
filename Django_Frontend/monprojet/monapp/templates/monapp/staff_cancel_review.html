@@ -7,12 +7,14 @@
         <p>Booking ID: {{ cancellation_request.booking.id }}</p>
         <p>Reason: {{ cancellation_request.reason }}</p>
         <p>Status: {{ cancellation_request.status }}</p>
-        <form method="post">
-            {% csrf_token %}
-            <input type="hidden" name="request_id" value="{{ cancellation_request.id }}">
-            <button type="submit" name="action" value="approve">Approve</button>
-            <button type="submit" name="action" value="reject">Reject</button>
-        </form>
+        {% if cancellation_request.status == 'pending' %}
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="request_id" value="{{ cancellation_request.id }}">
+                <button type="submit" name="action" value="approve">Approve</button>
+                <button type="submit" name="action" value="reject">Reject</button>
+            </form>
+        {% endif %}
     </div>
 {% endfor %}
 {% endblock %}
