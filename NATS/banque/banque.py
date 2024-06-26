@@ -41,12 +41,12 @@ async def handle_payment_request(msg):
         subject = msg.subject
         reply = msg.reply
         data = msg.data.decode()
-        parts = subject.split('.')
-        client = parts[2]
-        montant = float(data)
+        parts = data.split(':')
+        client = parts[0]
         
-        print(f"Requête de paiement reçue : client={client}, montant={montant}")
-
+        
+        
+        '''
         if client in clients:
             if clients[client] >= montant:
                 print(f"Validation de paiement reçue : autorize={autorize}")
@@ -54,23 +54,26 @@ async def handle_payment_request(msg):
                 if autorize:
                     print(f"Paiement de {montant} à {client} autorisé.")
                     clients[client] -= montant
-                    response_msg = f"True,Payer,Paiement autorisé. Nouveau solde de {client}: {clients[client]}"
+                    response_msg = True
                     save_clients()
                 else:
                     print("Paiement refusé.")
-                    response_msg = "False,Failed,Paiement refusé par l'autorisation."
+                    response_msg = False
             else:
                 print("Paiement refusé, solde insuffisant.")
-                response_msg = "False,Failed,Paiement refusé, solde insuffisant."
+                response_msg = False
         else:
             print("Client inconnu.")
-            response_msg = "False,Failed,Client inconnu."
+            response_msg = False
+       '''
+        #response_msg = "True"
+        #await nc.publish("banque.validation", response_msg.encode())
 
-        await nc.publish(reply, response_msg.encode())
 
     except Exception as e:
         print(f"Erreur: {str(e)}")
-        await nc.publish(reply, f"Erreur: {str(e)}".encode())
+        rep=f"Erreur: {str(e)}"
+        await nc.publish(reply, rep.encode())
 
 async def handle_account_request(msg):
     subject = msg.subject
@@ -147,11 +150,12 @@ async def main():
         await nc.subscribe("banque.*.compte", cb=handle_account_request)
         await nc.subscribe("banque.creation", cb=handle_create_account_request)
         await nc.subscribe("banque.list_accounts", cb=handle_list_accounts_request)
-        await nc.subscribe("banque.validation.*", cb=handle_payment_request)
+        await nc.subscribe("banque.validation", cb=handle_payment_request)
         await nc.subscribe("banque.*.rembousement", cb=handle_remboursement_request)
 
         while True:
             await asyncio.sleep(1)
+           
     except asyncio.CancelledError:
         pass
     finally:
