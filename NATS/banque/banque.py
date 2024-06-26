@@ -43,10 +43,8 @@ async def handle_payment_request(msg):
         data = msg.data.decode()
         parts = data.split(':')
         client = parts[0]
+        montant = float(parts[1])
         
-        
-        
-        '''
         if client in clients:
             if clients[client] >= montant:
                 print(f"Validation de paiement reçue : autorize={autorize}")
@@ -54,20 +52,19 @@ async def handle_payment_request(msg):
                 if autorize:
                     print(f"Paiement de {montant} à {client} autorisé.")
                     clients[client] -= montant
-                    response_msg = True
+                    response_msg = "True"
                     save_clients()
                 else:
                     print("Paiement refusé.")
-                    response_msg = False
+                    response_msg = "False"
             else:
                 print("Paiement refusé, solde insuffisant.")
-                response_msg = False
+                response_msg = "False"
         else:
             print("Client inconnu.")
-            response_msg = False
-       '''
-        #response_msg = "True"
-        #await nc.publish("banque.validation", response_msg.encode())
+            response_msg = "False"
+
+        await nc.publish(reply, response_msg.encode())
 
 
     except Exception as e:

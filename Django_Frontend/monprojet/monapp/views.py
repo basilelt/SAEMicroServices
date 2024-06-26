@@ -118,6 +118,18 @@ def success(request):
     """
     return render(request, 'monapp/success.html')
 
+def error(request):
+    """
+    Display the error page.
+
+    This view is triggered after a wrong operation, such as form submission. It renders a generic error message to inform the user that their action was completed successfully.
+
+    :param request: HttpRequest object
+    :return: HttpResponse object rendering the error page.
+    """
+    return render(request, 'monapp/error.html')
+
+
 def home(request):
     """
     Display the home page.
@@ -347,7 +359,7 @@ def payment(request, booking_id):
                 return redirect('success')
             else:
                 # Handle payment failure
-                return render(request, 'monapp/payment.html', {'form': form, 'booking': booking, 'error': 'Payment failed. Please try again.'})
+                return redirect('error')
     else:
         form = PaymentForm(initial={'booking_id': booking_id})
     return render(request, 'monapp/payment.html', {'form': form, 'booking': booking})
