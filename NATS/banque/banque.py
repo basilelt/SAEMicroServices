@@ -3,15 +3,18 @@ import nats
 import pickle
 import os
 
+# Directory for storing client data
 data_dir = "./data"
 if not os.path.exists(data_dir):
     os.makedirs(data_dir)
 data_file = os.path.join(data_dir, "clients.pkl")
 
 def save_clients():
+    """Save the clients' data to a file."""
     with open(data_file, "wb") as f:
         pickle.dump(clients, f)
 
+# Load existing client data or initialize with default values
 if os.path.exists(data_file):
     with open(data_file, "rb") as f:
         clients = pickle.load(f)
@@ -27,15 +30,25 @@ else:
 
 autorize = True
 
-
-
 async def handle_list_accounts_request(msg):
+    """
+    Handle requests to list all account names.
+    
+    Args:
+        msg (nats.aio.msg.Msg): The message received from NATS.
+    """
     reply = msg.reply
     accounts_list = ",".join(clients.keys())
     print(f"Liste des comptes demandée : {accounts_list}")
     await nc.publish(reply, accounts_list.encode())
 
 async def handle_payment_request(msg):
+    """
+    Handle payment validation requests.
+    
+    Args:
+        msg (nats.aio.msg.Msg): The message received from NATS.
+    """
     global autorize
     try:
         subject = msg.subject
@@ -66,13 +79,18 @@ async def handle_payment_request(msg):
 
         await nc.publish(reply, response_msg.encode())
 
-
     except Exception as e:
         print(f"Erreur: {str(e)}")
         rep=f"Erreur: {str(e)}"
         await nc.publish(reply, rep.encode())
 
 async def handle_account_request(msg):
+    """
+    Handle requests for account balance information.
+    
+    Args:
+        msg (nats.aio.msg.Msg): The message received from NATS.
+    """
     subject = msg.subject
     reply = msg.reply
     data = msg.data.decode()
@@ -88,6 +106,12 @@ async def handle_account_request(msg):
     await nc.publish(reply, response.encode())
 
 async def handle_create_account_request(msg):
+    """
+    Handle requests to create new accounts.
+    
+    Args:
+        msg (nats.aio.msg.Msg): The message received from NATS.
+    """
     subject = msg.subject
     reply = msg.reply
     data = msg.data.decode()
@@ -109,6 +133,12 @@ async def handle_create_account_request(msg):
     await nc.publish(reply, response.encode())
 
 async def handle_remboursement_request(msg):
+    """
+    Handle reimbursement requests.
+    
+    Args:
+        msg (nats.aio.msg.Msg): The message received from NATS.
+    """
     try:
         subject = msg.subject
         reply = msg.reply
@@ -134,6 +164,9 @@ async def handle_remboursement_request(msg):
         print(err)
 
 async def main():
+    """
+    Main function to set up NATS client and subscribe to various subjects.
+    """
     global nc
     env = os.getenv("DJANGO_ENVIRONMENT", "development")
     user = os.getenv("NATS_USER", '')
