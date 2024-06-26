@@ -7,3 +7,5 @@ banque_interface.py
 client.py
 diplay.py
 empty_db.sql
+__pycache__
+migrations
