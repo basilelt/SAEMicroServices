@@ -17,4 +17,6 @@ urlpatterns = [
     path('staff/cancellation-review/', views.staff_review_cancellation_request, name='staff_cancel_review'),
     path('staff/create_staff_user/', views.create_staff_user, name='create_staff_user'),
     path('create_flight/', views.create_flight, name='create_flight'),
+    path('flights/<int:flight_id>/update/', views.update_flight, name='update_flight'),
+    path('flights/<int:flight_id>/delete/', views.delete_flight, name='delete_flight'),
 ]

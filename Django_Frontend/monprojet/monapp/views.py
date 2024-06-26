@@ -1,5 +1,6 @@
 import requests
 import logging
+import json
 import os
 from datetime import datetime
 from django.shortcuts import render, redirect, get_object_or_404
@@ -9,7 +10,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from .forms import *
 from .models import *
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 
 # Create your views here.
@@ -26,6 +27,14 @@ def get_api_url():
     return api_url
 
 def client_create_view(request):
+    """
+    Create a new client instance.
+
+    This view handles the creation of a new client through a POST request. If the request is GET, it displays an empty form for creating a client.
+
+    :param request: HttpRequest object
+    :return: HttpResponse object rendering the client creation form or redirecting after the form is submitted.
+    """
     form = ClientForm(request.POST or None)
     if form.is_valid():
         form.save()
@@ -33,6 +42,14 @@ def client_create_view(request):
     return render(request, 'monapp/create_client.html', {'form': form})
 
 def staff_create_view(request):
+    """
+    Create a new staff member.
+
+    This view is responsible for handling the creation of a new staff member. It uses a form to capture staff details on a POST request, or displays the form on a GET request.
+
+    :param request: HttpRequest object
+    :return: HttpResponse object rendering the staff creation form or redirecting after the form is submitted.
+    """
     form = StaffForm(request.POST or None)
     if form.is_valid():
         form.save()
@@ -40,6 +57,14 @@ def staff_create_view(request):
     return render(request, 'monapp/create_staff.html', {'form': form})
 
 def staff_type_create_view(request):
+    """
+    Create a new staff type.
+
+    This view allows for the creation of new staff types, which categorize staff members into different roles or departments.
+
+    :param request: HttpRequest object
+    :return: HttpResponse object rendering the staff type creation form or redirecting after submission.
+    """    
     form = StaffTypeForm(request.POST or None)
     if form.is_valid():
         form.save()
@@ -47,24 +72,72 @@ def staff_type_create_view(request):
     return render(request, 'monapp/create_staff_type.html', {'form': form})
 
 def view_staff(request):
+    """
+    Display all staff members.
+
+    This view fetches all staff members from the database and displays them. It is accessible to all users.
+
+    :param request: HttpRequest object
+    :return: HttpResponse object rendering the list of staff members.
+    """
     staff = Staff.objects.all()
     return render(request, 'monapp/view_staff.html', {'staff': staff})
 
 def view_clients(request):
+    """
+    Display all clients.
+
+    This view fetches all client instances from the database and displays them. It is designed to provide a comprehensive list of clients, making it easier for staff to manage client information.
+
+    :param request: HttpRequest object
+    :return: HttpResponse object rendering the list of clients.
+    """
     clients = Client.objects.all()
     return render(request, 'monapp/view_clients.html', {'clients': clients})
 
 def view_staff_types(request):
+    """
+    Display all staff types.
+
+    This view retrieves all staff type instances from the database and displays them. It allows for the categorization and management of different staff roles or departments within the organization.
+
+    :param request: HttpRequest object
+    :return: HttpResponse object rendering the list of staff types.
+    """
     staff_types = StaffType.objects.all()
     return render(request, 'monapp/view_staff_types.html', {'staff_types': staff_types})
 
 def success(request):
+    """
+    Display the success page.
+
+    This view is triggered after a successful operation, such as form submission. It renders a generic success message to inform the user that their action was completed successfully.
+
+    :param request: HttpRequest object
+    :return: HttpResponse object rendering the success page.
+    """
     return render(request, 'monapp/success.html')
 
 def home(request):
+    """
+    Display the home page.
+
+    This view renders the home page of the application. It serves as the entry point for users navigating to the website, providing links to various functionalities of the application.
+
+    :param request: HttpRequest object
+    :return: HttpResponse object rendering the home page.
+    """
     return render(request, 'monapp/home.html')
 
 def register(request):
+    """
+    Register a new user.
+
+    This view handles the registration of new users. It displays a registration form and processes its submission. Upon POST request, the form is validated for correctness. If the form is valid, the new user is saved to the database, and the user is redirected to the login page. If the form is not valid or if it's a GET request, the registration form is rendered for the user to fill out.
+
+    :param request: HttpRequest object
+    :return: HttpResponseRedirect to the login page on successful registration, or render the registration page with the form (including errors, if any).
+    """
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
         if form.is_valid():
@@ -75,6 +148,14 @@ def register(request):
     return render(request, 'monapp/register.html', {'form': form})
 
 def login(request):
+    """
+    Authenticate and log in a user.
+
+    This view handles the authentication of a user. If the user is already authenticated, they are redirected to the home page. Otherwise, the view processes the login form submission. If the form is valid and the credentials are correct, the user is authenticated and logged in. Additionally, an authentication token is retrieved from an API endpoint and stored in the session or sent as a cookie. If authentication fails, appropriate error messages are displayed.
+
+    :param request: HttpRequest object containing user credentials.
+    :return: HttpResponseRedirect to the home page on successful login, or render the login page with error messages on failure.
+    """
     # Check if the user is already authenticated
     if request.user.is_authenticated:
         return HttpResponseRedirect('home')  # Redirect them to a home page or another appropriate page
@@ -107,10 +188,26 @@ def login(request):
     return render(request, 'monapp/login.html', {'form': form})
 
 def logout(request):
+    """
+    Log out the current user.
+
+    This view handles the logout process. It clears the session of the current user and redirects them to the home page.
+
+    :param request: HttpRequest object
+    :return: HttpResponseRedirect to the home page.
+    """
     auth_logout(request)
     return redirect('home')  # Redirect to a page of your choice, e.g., the home page
 
 def view_flights(request):
+    """
+    Display a list of flights.
+
+    This view fetches flight data from an external API and renders it to the user. It handles errors gracefully by logging them and returning an appropriate error message to the user.
+
+    :param request: HttpRequest object
+    :return: HttpResponse with the rendered flight details or an error message.
+    """
     api_url = get_api_url()
     
     token = request.session.get('auth_token')
@@ -177,6 +274,15 @@ def view_flights(request):
         return HttpResponse("An error occurred while processing flight data.", status=500)
 
 def book_flight(request, flight_id):
+    """
+    Allows a logged-in user to book a flight.
+
+    This view handles the flight booking process. It requires users to be authenticated to proceed with booking a flight. The booking details are sent to an external API, and the user's session token is used for authorization.
+
+    :param request: HttpRequest object containing booking details.
+    :param flight_id: The ID of the flight to be booked.
+    :return: HttpResponse object indicating the success or failure of the booking operation.
+    """
     if not request.user.is_authenticated:
         return HttpResponse('You must be logged in to book a flight.', status=401)
 
@@ -270,6 +376,15 @@ def view_bookings(request):
 
 
 def confirm_booking(request, booking_id):
+    """
+    Confirms a booking made by the user.
+
+    This view handles the confirmation of a flight booking. If the request method is POST, it redirects the user to the payment page. Otherwise, it retrieves the booking and flight details and displays them to the user for confirmation.
+
+    :param request: HttpRequest object
+    :param booking_id: The ID of the booking to be confirmed.
+    :return: HttpResponse object rendering the confirm booking page or redirecting to the payment page.
+    """
     if request.method == 'POST':
         # Redirect to the payment page
         return redirect('payment', booking_id=booking_id)
@@ -281,6 +396,14 @@ def confirm_booking(request, booking_id):
         return render(request, 'monapp/confirm_booking.html', context)
     
 def transactions_view(request):
+    """
+    Displays the transaction history of the logged-in user.
+
+    This view fetches and displays the transaction history of the authenticated user. It requires the user to be logged in. The transactions are fetched from an external API, using the user's session token for authentication.
+
+    :param request: HttpRequest object
+    :return: HttpResponse object rendering the transactions page or an error message if the user is not authenticated.
+    """
     if not request.user.is_authenticated:
         return HttpResponse('You must be logged in to view your bookings.', status=401)
 
@@ -296,6 +419,17 @@ def transactions_view(request):
     return render(request, 'monapp/transactions.html', {'transactions': transactions})
     
 def submit_cancellation_request(request, booking_id):
+    """
+    Handles the submission of a cancellation request for a specific booking.
+
+    This view is responsible for processing the cancellation request form. It retrieves the booking instance using the provided booking_id and initializes the form with it. If the form is submitted via POST and is valid, a new CancellationRequest instance is created and saved with the client set to the current user, and the flight and booking details taken from the retrieved booking instance. Upon successful submission, the user is redirected to a success page.
+
+    If the request is not a POST request, or if the form is not valid, the form is rendered for the user to fill out or correct.
+
+    :param request: HttpRequest object representing the current request.
+    :param booking_id: The ID of the booking for which the cancellation request is being made.
+    :return: HttpResponse object rendering the cancellation request form or redirecting to the success page upon successful form submission.
+    """
     booking = Booking.objects.get(id=booking_id)
     if request.method == 'POST':
         form = CancellationRequestForm(request.POST)
@@ -316,6 +450,14 @@ def staff_check(user):
 @login_required
 @user_passes_test(staff_check)
 def staff_review_cancellation_request(request):
+    """
+    Allows staff to review cancellation requests.
+
+    This view is accessible only to staff members. It enables them to review and process flight cancellation requests made by users.
+
+    :param request: HttpRequest object
+    :return: HttpResponse object rendering the cancellation requests review page.
+    """
     if request.method == 'POST':
         action = request.POST.get('action')
         request_id = request.POST.get('request_id')
@@ -342,6 +484,14 @@ def staff_review_cancellation_request(request):
 @login_required
 @user_passes_test(staff_check)
 def create_staff_user(request):
+    """
+    Allows staff to create new staff user accounts.
+
+    This view is restricted to staff members and allows them to create new user accounts for staff members, assigning them specific roles and permissions.
+
+    :param request: HttpRequest object
+    :return: HttpResponse object rendering the staff user creation page or redirecting upon successful creation.
+    """
     if request.method == 'POST':
         form = StaffCreationForm(request.POST)
         if form.is_valid():
@@ -353,6 +503,14 @@ def create_staff_user(request):
 
 @login_required
 def create_flight(request):
+    """
+    Allows staff to create a new flight.
+
+    This view enables staff members to create new flight entries in the system. It requires the user to be logged in and have the necessary permissions.
+
+    :param request: HttpRequest object
+    :return: HttpResponse object rendering the flight creation page or redirecting upon successful creation.
+    """
     if request.method == 'POST':
         form = FlightForm(request.POST)
         if form.is_valid():
@@ -361,3 +519,73 @@ def create_flight(request):
     else:
         form = FlightForm()
     return render(request, 'monapp/create_flight.html', {'form': form})
+
+@login_required
+def update_flight(request, flight_id):
+    """
+    Allows staff to update details of an existing flight.
+
+    This view enables staff members to update the details of an existing flight. It requires the user to be logged in and have the necessary permissions.
+
+    :param request: HttpRequest object
+    :param flight_id: The ID of the flight to be updated.
+    :return: HttpResponse object rendering the flight update page or redirecting upon successful update.
+    """
+    flight = get_object_or_404(Flight, id=flight_id)
+    api_url = f"{get_api_url()}flights/{flight_id}/"  # Adjusted to match RESTful URL pattern
+
+    token = request.session.get('auth_token')
+    headers = {'Authorization': f'Token {token}', 'Content-Type': 'application/json'}
+
+    if request.method == 'POST':
+        form = FlightForm(request.POST, instance=flight)
+        if form.is_valid():
+            cleaned_data = form.cleaned_data
+            # Format datetime fields as strings
+            cleaned_data['departure'] = cleaned_data['departure'].strftime('%Y-%m-%dT%H:%M')
+            cleaned_data['arrival'] = cleaned_data['arrival'].strftime('%Y-%m-%dT%H:%M')
+
+            # Ensure primary key values are used for foreign key fields
+            cleaned_data['plane'] = cleaned_data['plane'].id if cleaned_data.get('plane') else None
+            cleaned_data['track_origin'] = cleaned_data['track_origin'].id if cleaned_data.get('track_origin') else None
+            cleaned_data['track_destination'] = cleaned_data['track_destination'].id if cleaned_data.get('track_destination') else None
+
+            # Convert the cleaned data to JSON
+            json_data = json.dumps(cleaned_data, default=str)
+
+            # Since we're using PATCH, all updates are considered partial
+            response = requests.patch(api_url, data=json_data, headers=headers)
+            if response.status_code == 200:
+                return redirect('flights')  # Redirect to the flight listing page
+            else:
+                # Handle API errors or display a message to the user
+                return JsonResponse({'error': 'API error', 'details': response.text}, status=response.status_code)
+    else:
+        form = FlightForm(instance=flight)
+    return render(request, 'monapp/update_flight.html', {'form': form})
+
+@login_required
+def delete_flight(request, flight_id):
+    """
+    Allows staff to delete an existing flight.
+
+    This view enables staff members to delete an existing flight from the system. It requires the user to be logged in and have the necessary permissions.
+
+    :param request: HttpRequest object
+    :param flight_id: The ID of the flight to be deleted.
+    :return: HttpResponse object indicating the success or failure of the deletion operation.
+    """
+    api_url = f"{get_api_url()}flights/delete/"
+    token = request.session.get('auth_token')
+    
+    headers = {'Authorization': f'Token {token}'}
+    
+    if request.method == 'POST':
+        # Assuming the API endpoint for deleting a flight is /api/flights/<flight_id>/
+        response = requests.delete(f'{api_url}{flight_id}/', headers=headers)
+        if response.status_code == 204:
+            return redirect('flights')  # Redirect to the flight listing page
+        else:
+            # Handle API errors or display a message to the user
+            pass
+    return render(request, 'monapp/delete_flight.html', {'flight_id': flight_id})

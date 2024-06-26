@@ -6,8 +6,12 @@
             {% for booking in bookings %}
                 <li>
                     Booking ID: {{ booking.id }}, Flight: {{ booking.flight }}, Status: {{ booking.status }}
-                    <!-- Add a link for submitting a cancellation request -->
-                    <a href="{% url 'cancel_booking' booking.id %}">Cancel Booking</a>
+                    {% if booking.cancellationrequest_set.all %}
+                        <span>Cancellation Requested</span>
+                    {% else %}
+                        <!-- Add a link for submitting a cancellation request -->
+                        <a href="{% url 'cancel_booking' booking.id %}">Cancel Booking</a>
+                    {% endif %}
                 </li>
             {% endfor %}
         </ul>
