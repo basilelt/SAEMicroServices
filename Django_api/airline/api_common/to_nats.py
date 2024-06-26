@@ -10,7 +10,7 @@ async def request_message(subject, message, servers, timeout=0.5):
     try:
         response = await nc.request(subject, message.encode())
         response = response.data.decode()
-        await nc.publish("banque.validation", response.encode())    
+        #await nc.publish("banque.validation", response.encode())    
         return response
     except Exception :
         return None
@@ -23,8 +23,7 @@ async def post_message(subject, message, servers, timeout=5):
     await nc.connect(servers,user="user",password="password")
 
     try:
-        response = await nc.publish(subject, message.encode(), timeout=timeout)
-        return response.data.decode()
+        await nc.publish(subject, message.encode(), timeout=timeout)
     except Exception :
         return None
     finally:

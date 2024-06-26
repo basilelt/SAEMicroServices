@@ -16,7 +16,7 @@ import nats
 from .to_nats import *
 import os
 import time
-
+import random
 
 class ObtainAuthToken(APIView):
     permission_classes = (AllowAny,)
@@ -28,31 +28,13 @@ class ObtainAuthToken(APIView):
         if user:
             user_id_bank = user.id
             token, created = Token.objects.get_or_create(user=user)
-            asyncio.run(self.banque_account_create(user_id_bank))
+            asyncio.run(post_message("banque.creation",f"{user_id_bank}:{random.randint(200:800)}",server="nats://nats:4222"))
             return Response({'token': token.key})
         else:
             return Response({'error': 'Invalid Credentials'}, status=status.HTTP_400_BAD_REQUEST)
 
-    async def banque_account_create(self, user_id_bank):
-        global nc
-        env = os.getenv('DJANGO_ENVIRONMENT', 'development')
-        user = os.getenv('NATS_USER', 'user')
-        password = os.getenv('NATS_PASSWORD', 'password')
-        if env == 'development':
-            nc = await nats.connect("nats://localhost:4222")
-        else:
-            nc = await nats.connect("nats://nats:4222",user=user,password=password)
-        try:
-            response = await nc.request(f"banque.creation",f"{str(user_id_bank)}:1000",timeout=10)
-            response_data = response.data.decode()
-            data = response_data.split(",")
-            status=data[0]
-            if status == "True":
-                return Response({'status': 'Account created'}, status=status.HTTP_200_OK)
-            else:
-                return Response({'error': 'Account creation failed'}, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:  
-            print(e)
+    
+     
 
 class UserListView(generics.ListCreateAPIView):
     queryset = User.objects.all()
@@ -362,7 +344,7 @@ class PaymentView(APIView):
 
         
 
-        if payment_successful:
+        if payment_successful == 'True':
             booking.status = 'confirmed'
             booking.save()
             
