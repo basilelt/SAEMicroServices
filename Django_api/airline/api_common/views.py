@@ -13,8 +13,9 @@ from .models import *
 from .serializers import *
 import asyncio
 import nats
-from .to_nats import * 
+from .to_nats import *
 import os
+import time
 
 
 class ObtainAuthToken(APIView):
@@ -225,20 +226,29 @@ class DeleteFlightView(generics.DestroyAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 # new-2
-    async def vol_delete():
-        global nc
+    def vol_delete():
         env = os.getenv('DJANGO_ENVIRONMENT', 'development')
         user = os.getenv('NATS_USER', '')
         password = os.getenv('NATS_PASSWORD', '')
-        if env == 'development':
-            nc = await nats.connect("nats://localhost:4222")
-        else:
-            nc = await nats.connect("nats://nats:4222",user=user,password=password)
-        try:
-            flidht_delete = f"{Flight.objects.get(id=self.kwargs.get('pk'))}"
-            await nc.publish(f"vol.delete",flidht_delete)
-        except Exception as e:  
-            print(e)
+        server="nats://localhost:4222"
+        post_message("vol.delete",f"{Flight.objects.get(id=self.kwargs.get('pk'))}",server)
+
+
+#class ConfirmBookingView(APIView):
+#    permission_classes = [IsAdminUser]
+#
+#    def post(self, request, *args, **kwargs):
+#        booking_id = request.data.get('booking_id')
+#        try:
+#            booking = Booking.objects.get(id=booking_id)
+#            if booking.status == 'pending':
+#                booking.status = 'confirmed'
+#                booking.save()
+#                return Response({'status': 'Booking confirmed'}, status=status.HTTP_200_OK)
+#            else:
+#                return Response({'error': 'Booking is not in a pending state'}, status=status.HTTP_400_BAD_REQUEST)
+#        except Booking.DoesNotExist:
+#            return Response({'error': 'Booking not found'}, status=status.HTTP_404_NOT_FOUND)
 
 class AddAirportView(generics.CreateAPIView):
     queryset = Airport.objects.all()
@@ -345,9 +355,12 @@ class PaymentView(APIView):
         subject="banque.validation"
         message = f"{client_id}:{price_seat}"
         # Simulate payment process. In a real scenario, you would integrate with a payment gateway.
-        #data=asyncio.run(request_message(subject,message,server,price_seat)) 
-        #data.split(",")
-        payment_successful = True #data[0] # Replace with True for testing
+        retour_nats=asyncio.run(request_message(subject,message,server))
+        time.sleep(3)
+
+        payment_successful = retour_nats # Replace with True for testing
+
+        
 
         if payment_successful:
             booking.status = 'confirmed'
